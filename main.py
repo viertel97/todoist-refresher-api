@@ -77,8 +77,8 @@ async def custom_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     print("lol")
     if DEBUG:
-        uvicorn.run(app, host="localhost", port=9100, workers=1, reload=True)
-
+        # uvicorn.run(app, host="localhost", port=9100, workers=1, reload=True)
+        hourly.todoist_to_work_routine()
         # daily.links()
         # daily.monica(False)
         # daily.monica_for_following_days(0)

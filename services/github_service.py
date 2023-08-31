@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from github import Github
 from quarter_lib.akeyless import get_secrets
@@ -13,6 +14,8 @@ github_token = get_secrets(
 )
 
 g = Github(github_token)
+
+WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 
 
 def get_previous_description(previous_desc):
@@ -104,3 +107,18 @@ def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
     repo.create_file(path="0300_Spaces/Social Circle/Activities/" + file_name,
                      message=f"obsidian-refresher: {run_timestamp}", content=metadata + file_content)
     logger.info(f"Created {file_name} in github")
+
+def add_to_work_inbox(work_list):
+    run_timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+    repo = g.get_repo("viertel97/obsidian")
+    file = repo.get_contents(WORK_INBOX_FILE_PATH)
+    old_content = file.decoded_content.decode("utf-8")
+    content_to_add = f"\n\n## {run_timestamp}\n"
+    for item in work_list:
+        if item.description:
+            content_to_add += f"- {item.content} - {item.description}\n"
+        else:
+            content_to_add += f"- {item.content}\n"
+    # update
+    repo.update_file(file.path, f"obsidian-refresher (work): {run_timestamp}",f"{old_content} /n/n{content_to_add}", file.sha)

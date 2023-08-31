@@ -50,6 +50,9 @@ NOTION_DONE_SECTION_ID = "100014109"
 TO_MICROJOURNAL_DONE_LABEL_ID = "2161902457"
 MICROJOURNAL_DONE_SECTION_ID = "100014120"
 
+TO_WORK_DONE_LABEL_ID = "2168502868"
+TO_WORK_DONE_SECTION_ID = "132700483"
+
 STORAGE_PROJECT_ID = "2298105794"
 RETHINK_PROJECT_ID = "2296630360"
 TO_RETHINK_DONE_LABEL_ID = "2163807453"
@@ -217,6 +220,11 @@ def move_item_to_notion_done(item):
     set_label(item.id, label_id=TO_NOTION_DONE_LABEL_ID)
 
 
+def move_item_to_work_done(item):
+    move_item_to_section(item.id, section_id=TO_WORK_DONE_SECTION_ID)
+    set_label(item.id, label_id=TO_WORK_DONE_LABEL_ID)
+
+
 def move_item_to_microjournal_done(item):
     move_item_to_section(item.id, section_id=MICROJOURNAL_DONE_SECTION_ID)
     set_label(item.id, label_id=TO_MICROJOURNAL_DONE_LABEL_ID)
@@ -326,6 +334,7 @@ def add_not_matched_task(not_found):
 
 def get_tasks_by_filter(filter_name):
     return TODOIST_API.get_tasks(filter=filter_name)
+
 
 def get_project_names_by_ids(project_ids):
     return [TODOIST_API.get_project(project_id).name for project_id in project_ids]
