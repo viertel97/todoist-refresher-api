@@ -1,0 +1,22 @@
+[
+    {
+        "bad_habit": "fk",
+        "name": "Fingernägel-Kauen",
+        "price": 1.5
+    },
+    {
+        "bad_habit": "s",
+        "name": "Süßigkeiten essen",
+        "price": 1
+    },
+    {
+        "bad_habit": "n",
+        "name": "Nasenbohren",
+        "price": 1
+    },
+    {
+        "bad_habit": "o",
+        "name": "Override LeechBlock",
+        "price": 1.5
+    }
+]

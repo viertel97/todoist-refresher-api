@@ -1,0 +1,15 @@
+{
+  "apps": [
+    {
+      "name": "todoist-refresher-api",
+      "script": "main.py",
+      "cwd": "/home/pi/code/todoist-refresher-api",
+      "interpreter": "/home/pi/code/todoist-refresher-api/venv/bin/python",
+      "instances": 1,
+      "exec_mode": "fork",
+      "log_date_format": "YYYY-MM-DD HH:mm Z",
+      "combine_logs": true,
+      "max_restarts": 3
+    }
+  ]
+}
