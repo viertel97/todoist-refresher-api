@@ -387,12 +387,21 @@ def stretch_article_list():
     df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
     df.drop(columns=["properties~Name~title"], inplace=True)
     df = df[
-        ["id", "title", "properties~Priority~number", "properties~Not-Available~checkbox", "properties~Done~checkbox"]
+        ["id", "title",
+         "properties~Priority~number",
+         "properties~Not-Available~checkbox",
+         "properties~Done~checkbox",
+         "properties~Medium~select~name",
+         "properties~Topics~multi_select"
+         ]
     ]
     df.sort_values(by="properties~Priority~number", inplace=True)
     df = df[df["properties~Not-Available~checkbox"] == False]
     df = df[df["properties~Done~checkbox"] == False]
     df = df[df["properties~Priority~number"] > 0]
+    df = df[~df["properties~Medium~select~name"].isna()]
+    df = df[df["properties~Topics~multi_select"].str.len() != 0]
+
     df.reset_index(drop=True, inplace=True)
     logger.info("filtered Articles & starting to update")
     for index, row in df.iterrows():
@@ -411,12 +420,22 @@ def stretch_project_tasks():
     df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
     df.drop(columns=["properties~Name~title"], inplace=True)
     df = df[
-        ["id", "title", "properties~Priority~number", "properties~Completed~date~start", "properties~Obsolet~checkbox"]
+        ["id", "title", "properties~Priority~number",
+         "properties~Completed~date~start",
+         "properties~Obsolet~checkbox",
+            "properties~Project~multi_select",
+         "properties~Effort~select~name",
+            "properties~Status~status~name"
+         ]
     ]
     df.sort_values(by="properties~Priority~number", inplace=True)
     df = df[df["properties~Obsolet~checkbox"] == False]
     df = df[df["properties~Completed~date~start"].isna()]
-    df = df[df["properties~Priority~number"] > 0]
+    df = df[~df["properties~Priority~number"].isna()]
+    df = df[~df["properties~Effort~select~name"].isna()]
+    df = df[df["properties~Status~status~name"] == "Not started"]
+    df = df[df["properties~Project~multi_select"].str.len() != 0]
+
     df.reset_index(drop=True, inplace=True)
     logger.info("filtered TPT & starting to update")
     for index, row in df.iterrows():
