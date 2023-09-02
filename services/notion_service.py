@@ -380,7 +380,7 @@ def update_priority(page_id_priority):
         print(r.text)
     return r
 
-async def stretch_article_list():
+def stretch_article_list():
     logger.info("stretching Articles")
     df = get_database(ARTICLES_ID)
     logger.info("got Articles")
@@ -404,7 +404,7 @@ async def stretch_article_list():
         time.sleep(1)
     logger.info("Done updating Articles")
 
-async def stretch_project_tasks():
+def stretch_project_tasks():
     logger.info("stretching TPT")
     df = get_database(TPT_ID)
     logger.info("got TPT")
