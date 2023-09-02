@@ -1,9 +1,10 @@
 import os
 from datetime import datetime, timedelta
+from typing import Annotated
 
 from fastapi import APIRouter
-from loguru import logger
-
+from fastapi import Path
+from quarter_lib.logging import setup_logging
 from helper.config_helper import get_value
 from helper.database_helper import create_server_connection
 from services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
@@ -28,14 +29,8 @@ from services.todoist_service import (
     get_vacation_mode, add_after_vacation_tasks
 )
 
+logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
-
-logger.add(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-    format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-    backtrace=True,
-    diagnose=True,
-)
 
 TO_NOTION_LABEL_ID = "2160732004"
 TO_MICROJOURNAL_LABEL_ID = "2161901884"
@@ -80,9 +75,8 @@ def monica_evening():
 
 @logger.catch
 @router.post("/monica_for_following_days/{days_in_future}")
-def monica_for_following_days(days_in_future):
+def monica_for_following_days(days_in_future: Annotated[int, Path(title="The ID of the item to get")]):
     logger.info("start daily - monica (preparation for tomorrow)")
-    raise NotImplementedError
     events = get_events()
     events_tomorrow, selected_date = was_at_day(events, days_in_future)
     logger.info(
