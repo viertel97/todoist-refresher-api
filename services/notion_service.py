@@ -1,4 +1,5 @@
 import json
+import time
 import urllib.parse
 from datetime import datetime, timedelta
 
@@ -23,12 +24,15 @@ logger = setup_logging(__file__)
 
 NOTION_TOKEN = get_secrets(['notion/token'])
 
-base_url = "https://api.notion.com/v1/"
-headers = {
+BASE_URL = "https://api.notion.com/v1/"
+HEADERS = {
     "Authorization": "Bearer " + NOTION_TOKEN,
     "Content-Type": "application/json",
     "Notion-Version": "2021-08-16",
 }
+
+TPT_ID = "b3042bf44bd14f40b0167764a0107c2f"
+ARTICLES_ID = "7e43eaa4b66b4dc695cd96d55be0aac2"
 
 DATABASES = get_config("databases_config.json")
 UNWANTED_COLUMNS = ["Date", 'Day of Week', 'Kater', 'Month', 'Month-Number', 'Name', 'R DATE', 'RELATIVE DATE NUMBER',
@@ -37,14 +41,14 @@ UNWANTED_COLUMNS = ["Date", 'Day of Week', 'Kater', 'Month', 'Month-Number', 'Na
 
 
 def get_database(database_id):
-    url = base_url + "databases/" + database_id + "/query"
+    url = BASE_URL + "databases/" + database_id + "/query"
     result_list = []
     body = None
     while True:
         r = (
-            requests.post(url, headers=headers).json()
+            requests.post(url, headers=HEADERS).json()
             if body is None
-            else requests.post(url, data=json.dumps(body), headers=headers).json()
+            else requests.post(url, data=json.dumps(body), headers=HEADERS).json()
         )
         for results in r["results"]:
             result_list.append(results)
@@ -173,9 +177,9 @@ def get_random_row_from_link_list(database_id):
 
 
 def update_notion_page(page_id):
-    url = base_url + "pages/" + page_id
+    url = BASE_URL + "pages/" + page_id
     data = {"properties": {"Synced-to-Todoist": {"checkbox": True}}}
-    r = requests.patch(url, data=json.dumps(data), headers=headers).json()
+    r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
 
 
 ################################ Habit Tracker ################################
@@ -208,7 +212,7 @@ def check_habits(data_frame, checked_date):
 
 def get_page_for_date(date, database_id=None):
     if database_id is not None:
-        url = base_url + "databases/" + database_id + "/query"
+        url = BASE_URL + "databases/" + database_id + "/query"
         body = {
             "filter": {
                 "property": "Date",
@@ -220,7 +224,7 @@ def get_page_for_date(date, database_id=None):
 
         result_list = []
         while True:
-            r = requests.post(url, data=json.dumps(body), headers=headers).json()
+            r = requests.post(url, data=json.dumps(body), headers=HEADERS).json()
             for results in r["results"]:
                 result_list.append(results)
             body["start_cursor"] = r.get("next_cursor")
@@ -241,10 +245,10 @@ def get_page_for_date_old(date, database_id=None, df=None):
 
 
 def update_notion_habit_tracker_page(page_id, completed_habits):
-    url = base_url + "pages/" + page_id
+    url = BASE_URL + "pages/" + page_id
     for habit in completed_habits:
         data = {"properties": {habit: {"checkbox": True}}}
-        r = requests.patch(url, data=json.dumps(data), headers=headers).json()
+        r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
         logger.info("'" + habit + "' checked on page '" + page_id + "'")
 
 def update_notion_habit_tracker():
@@ -297,7 +301,7 @@ def get_random_from_notion_link_list(database_id, df_projects=None, due={"string
 
 
 def add_to_technical_project_tasks(database_id, todoist_item):
-    url = base_url + "pages"
+    url = BASE_URL + "pages"
     if todoist_item.description:
         data = {
             "parent": {"database_id": database_id},
@@ -328,7 +332,7 @@ def add_to_technical_project_tasks(database_id, todoist_item):
                 "Priority": {"type": "number", "number": 0},
             },
         }
-    r = requests.post(url, data=json.dumps(data), headers=headers).json()
+    r = requests.post(url, data=json.dumps(data), headers=HEADERS).json()
     # logger.info(r)
 
 
@@ -337,7 +341,7 @@ def get_drugs_from_activity(row, drug_date_dict):
     if happened_at in drug_date_dict.keys():
         return drug_date_dict[happened_at]
     drug_tracker_database_id = get_value("drug", "name", DATABASES)['id']
-    url = base_url + "databases/" + drug_tracker_database_id + "/query"
+    url = BASE_URL + "databases/" + drug_tracker_database_id + "/query"
     body = {
         "filter": {
             "property": "Date",
@@ -349,7 +353,7 @@ def get_drugs_from_activity(row, drug_date_dict):
 
     result_list = []
     while True:
-        r = requests.post(url, data=json.dumps(body), headers=headers).json()
+        r = requests.post(url, data=json.dumps(body), headers=HEADERS).json()
         for results in r["results"]:
             result_list.append(results)
         body["start_cursor"] = r.get("next_cursor")
@@ -366,3 +370,60 @@ def get_drugs_from_activity(row, drug_date_dict):
         for multi_select_item in multi_select:
             drug_date_dict[happened_at].append(multi_select_item["name"])
     return drug_date_dict
+
+def update_priority(page_id_priority):
+    url = BASE_URL + "pages/" + page_id_priority[0]
+    data = {"properties": {"Priority": {"number": page_id_priority[1]}}}
+    r = requests.patch(url, data=json.dumps(data), headers=HEADERS)
+    if r.status_code != 200:
+        print(r.status_code)
+        print(r.text)
+    return r
+
+async def stretch_article_list():
+    logger.info("stretching Articles")
+    df = get_database(ARTICLES_ID)
+    logger.info("got Articles")
+    df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
+    df.drop(columns=["properties~Name~title"], inplace=True)
+    df = df[
+        ["id", "title", "properties~Priority~number", "properties~Not-Available~checkbox", "properties~Done~checkbox"]
+    ]
+    df.sort_values(by="properties~Priority~number", inplace=True)
+    df = df[df["properties~Not-Available~checkbox"] == False]
+    df = df[df["properties~Done~checkbox"] == False]
+    df = df[df["properties~Priority~number"] > 0]
+    df.reset_index(drop=True, inplace=True)
+    logger.info("filtered Articles & starting to update")
+    for index, row in df.iterrows():
+        update_priority((df.iloc[index]["id"], index + 1))
+        if (index + 1) % 10 == 0:
+            logger.info(f"updated {index + 1} rows")
+        if (index + 1) % 30 == 0:
+            logger.info(f"updated {index + 1} rows")
+        time.sleep(1)
+    logger.info("Done updating Articles")
+
+async def stretch_project_tasks():
+    logger.info("stretching TPT")
+    df = get_database(TPT_ID)
+    logger.info("got TPT")
+    df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
+    df.drop(columns=["properties~Name~title"], inplace=True)
+    df = df[
+        ["id", "title", "properties~Priority~number", "properties~Completed~date~start", "properties~Obsolet~checkbox"]
+    ]
+    df.sort_values(by="properties~Priority~number", inplace=True)
+    df = df[df["properties~Obsolet~checkbox"] == False]
+    df = df[df["properties~Completed~date~start"].isna()]
+    df = df[df["properties~Priority~number"] > 0]
+    df.reset_index(drop=True, inplace=True)
+    logger.info("filtered TPT & starting to update")
+    for index, row in df.iterrows():
+        update_priority((df.iloc[index]["id"], index + 1))
+        if (index + 1) % 10 == 0:
+            logger.info(f"updated {index + 1} rows")
+        if (index + 1) % 30 == 0:
+            logger.info(f"updated {index + 1} rows")
+        time.sleep(1)
+    logger.info("Done updating TPT")

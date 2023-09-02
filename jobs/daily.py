@@ -20,7 +20,7 @@ from services.notion_service import (
     DATABASES,
     get_random_from_notion_link_list,
     update_notion_habit_tracker,
-    update_habit_tracker_vacation_mode, get_page_for_date,
+    update_habit_tracker_vacation_mode, get_page_for_date, stretch_project_tasks, stretch_article_list,
 )
 from services.sqlite_service import get_koreader_page_stat, get_koreader_book
 from services.todoist_service import (
@@ -41,6 +41,8 @@ PROJECT_IDS = ["2300202317",
                "2306562514"]
 
 RETHINK_PROJECT_ID = "2296630360"
+
+
 
 
 def monica(check_for_next_day=False):
@@ -135,6 +137,18 @@ def notion_habit_tracker_stack():
     # check_order_supplements(df)
     logger.info("end - daily notion habit tracker stack")
 
+@logger.catch
+@router.post("/stretch_tpt")
+def stretch_tpt():
+    logger.info("start daily - stretch tpt")
+    stretch_project_tasks()
+    logger.info("end daily - stretch tpt")
+@logger.catch
+@router.post("/stretch_articles")
+def stretch_articles():
+    logger.info("start daily - stretch articles")
+    stretch_article_list()
+    logger.info("end daily - stretch articles")
 
 def links():
     logger.info("start daily - links")
