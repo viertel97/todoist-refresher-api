@@ -32,6 +32,8 @@ def update_todoist_projects():
 
     df_items_due, df_projects, df_items_next_week = get_data()
 
+    temp_project_dict = PROJECT_DICT.copy()
+
     week_list = get_dates()
     df_items_due.apply(
         lambda row: check_due(
@@ -40,14 +42,17 @@ def update_todoist_projects():
             row["project_id"],
             week_list,
             df_projects,
-            PROJECT_DICT,
+            temp_project_dict,
         ),
         axis=1,
     )
-    df_items_next_week.apply(
-        lambda row: check_next_week(row["id"], row["project_id"], df_projects, PROJECT_DICT),
-        axis=1,
-    )
+    if len(df_items_next_week.index) > 0:
+        df_items_next_week.apply(
+            lambda row: check_next_week(row["id"], row["project_id"], df_projects, temp_project_dict),
+            axis=1,
+        )
+    # remove duplicates from project dict
+    temp_project_dict = {k: v for k, v in temp_project_dict.items() if v is not None}
     move_items(PROJECT_DICT, df_projects)
     logger.info("end weekly - todoist projects")
 
