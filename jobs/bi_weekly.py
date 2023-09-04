@@ -102,12 +102,17 @@ def update_book_rework():
     for item in items:
         content = item['orig_item'].content
         split_content = content.split(' - ')
-        if (len(split_content) < 2):
-            logger.error("item with content '{}' has no book".format(content))
-            items.remove(item)
-            continue
-        item['annotation'] = split_content[0]
-        item['book'] = split_content[1]
+        if (len(split_content) != 3):
+            if split_content[len(split_content) - 1] == "Obsidian-Eintrag überdenken":
+                item['annotation'] = "".join(split_content[0:len(split_content) - 2])
+                item['book'] = split_content[len(split_content) - 2]
+            else:
+                logger.error("item with content '{}' has no book".format(content))
+        else:
+            item['annotation'] = split_content[0]
+            item['book'] = split_content[1]
+
+    items = [item for item in items if "book" in item.keys()]
 
     if len(items) > 0:
         due_items = [item['orig_item'] for item in items if item['orig_item'].due is not None]
