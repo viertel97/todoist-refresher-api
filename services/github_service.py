@@ -1,5 +1,9 @@
 import json
+import os
+import shutil
 from datetime import datetime
+from pathlib import Path
+import git
 
 from github import Github
 from quarter_lib.akeyless import get_secrets
@@ -14,6 +18,12 @@ github_token = get_secrets(
 )
 
 g = Github(github_token)
+
+temp = Path().home() / ".ssh" / "id_rsa"
+git_ssh_cmd = 'ssh -i %s' % temp
+branch_name = "main"
+repo_clone_dir = "temp_repo"
+ssh_url = "git@github.com:viertel97/obsidian.git"
 
 WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 
@@ -68,6 +78,28 @@ def generate_file_content(summary, description):
     return return_string
 
 
+def get_files_with_modification_date(path):
+    try:
+        logger.info(
+            f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering last modified date for {path}")
+        local_repo = git.Repo.clone_from(ssh_url, to_path=repo_clone_dir, branch=branch_name,
+                                         env=dict(GIT_SSH_COMMAND=git_ssh_cmd))
+
+        file_last_modified = {}
+        for commit in local_repo.iter_commits(rev=branch_name):
+            for file_path in commit.stats.files:
+                if path in file_path:
+                    path_to_check = os.path.join(repo_clone_dir, file_path)
+                    if file_path not in file_last_modified and os.path.exists(path_to_check):
+                        file_last_modified[file_path] = commit.committed_date
+
+        contents = [{"path": k, "last_modified_date": v} for k, v in file_last_modified.items()]
+    finally:
+        shutil.rmtree("temp_repo")
+
+    return contents
+
+
 def get_files(path):
     g = Github(github_token)
     repo = g.get_repo("viertel97/obsidian")
@@ -75,10 +107,6 @@ def get_files(path):
     return contents
 
 
-def get_zettelkasten_from_github():
-    files = get_files("0000_Zettelkasten")
-    # sorted_files = sorted(files, key=lambda x: x.last_modified_date)
-    return files
 
 
 def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
@@ -108,6 +136,7 @@ def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
                      message=f"obsidian-refresher: {run_timestamp}", content=metadata + file_content)
     logger.info(f"Created {file_name} in github")
 
+
 def add_to_work_inbox(work_list):
     run_timestamp = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
@@ -121,4 +150,5 @@ def add_to_work_inbox(work_list):
         else:
             content_to_add += f"- {item.content}\n"
     # update
-    repo.update_file(file.path, f"obsidian-refresher (work): {run_timestamp}",f"{old_content} /n/n{content_to_add}", file.sha)
+    repo.update_file(file.path, f"obsidian-refresher (work): {run_timestamp}", f"{old_content} /n/n{content_to_add}",
+                     file.sha)

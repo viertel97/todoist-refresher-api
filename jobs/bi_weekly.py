@@ -7,12 +7,12 @@ from fastapi import APIRouter
 from loguru import logger
 
 from helper.caching import ttl_cache
-from services.github_service import get_zettelkasten_from_github
+from services.github_service import get_files, get_files_with_modification_date
 from services.todoist_service import (
     update_obsidian_task,
     get_items_by_todoist_project,
-    update_task_due, add_obsidian_task, OBSIDIAN_REWORK_PROJECT_ID, check_if_last_item, get_tasks_by_filter,
-    get_project_names_by_ids
+    update_task_due, add_obsidian_task_for_note, OBSIDIAN_REWORK_PROJECT_ID, check_if_last_item, get_tasks_by_filter,
+    get_project_names_by_ids, add_obsidian_task_for_activity
 )
 
 router = APIRouter(prefix="/bi_weekly", tags=["bi_weekly"])
@@ -56,9 +56,10 @@ def update_to_think_about():
 
 
 @logger.catch
-@router.post("/obsidian")
-def obsidian():
-    logger.info("start bi-daily - obsidian")
+@router.post("/obsidian_random_note")
+def obsidian_random_note():
+
+    logger.info("start bi-daily - obsidian - random note")
 
     obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
     without_due = [item for item in obsidian_rework_items if not item.due]
@@ -73,18 +74,68 @@ def obsidian():
             item = without_due[0]
             update_obsidian_task(item)
         else:
-            zettelkasten_files = get_zettelkasten_from_github()
+            files = get_files("0000_Zettelkasten")
 
-            # file = zettelkasten_files[0]
-            # zettelkasten_files.remove(file)
-            # add_obsidian_task(file, "Oldest file")
-            # logger.info("selected oldest file '{}'".format(file['name']))
-
-            file = random.choice(zettelkasten_files)
-            add_obsidian_task(file, "Random file")
+            file = random.choice(files)
+            add_obsidian_task_for_note(file.name, "Random file")
             logger.info("selected random file '{}'".format(file.name))
 
-            logger.info("end bi-daily - obsidian")
+            logger.info("end bi-daily - obsidian - random note")
+
+
+@logger.catch
+@router.post("/obsidian_oldest_note")
+def obsidian_oldest_note():
+
+    logger.info("start bi-daily - obsidian - oldest note")
+
+    obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
+    without_due = [item for item in obsidian_rework_items if not item.due]
+    with_due = [item for item in obsidian_rework_items if item.due]
+
+    if with_due:
+        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
+        for item in with_due:
+            update_task_due(item, tomorrow)
+    else:
+        if without_due:
+            item = without_due[0]
+            update_obsidian_task(item)
+        else:
+            files = get_files_with_modification_date("0000_Zettelkasten")
+            sorted_files = sorted(files, key=lambda x: x['last_modified_date'], reverse=False)
+            file = sorted_files[0]
+            add_obsidian_task_for_note(file['path'], "Oldest file")
+            logger.info("selected oldest file '{}'".format(file['path']))
+
+            logger.info("end bi-daily - obsidian - oldest note")
+
+@logger.catch
+@router.post("/obsidian_random_activity")
+def obsidian_random_activity():
+
+    logger.info("start bi-daily - obsidian - random activity")
+
+    obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
+    without_due = [item for item in obsidian_rework_items if not item.due]
+    with_due = [item for item in obsidian_rework_items if item.due]
+
+    if with_due:
+        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
+        for item in with_due:
+            update_task_due(item, tomorrow)
+    else:
+        if without_due:
+            item = without_due[0]
+            update_obsidian_task(item)
+        else:
+            files = get_files("0300_Spaces/Social Circle/Activities")
+
+            file = random.choice(files)
+            add_obsidian_task_for_activity(file.name, "Random activity file")
+            logger.info("selected random activity file '{}'".format(file.name))
+
+            logger.info("end bi-daily - obsidian - random activity")
 
 
 @logger.catch

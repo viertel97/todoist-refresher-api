@@ -306,12 +306,17 @@ def check_if_last_item(book_title, items):
         project_id="2300202317", due_string="tomorrow")
 
 
-def add_obsidian_task(file, description=None):
-    content = "{file_name} §§§ Obsidian-Notiz überarbeiten".format(file_name=file.name)
+def add_obsidian_task_for_note(file_name, description=None):
+    content = "{file_name} §§§ Obsidian-Notiz überarbeiten".format(file_name=file_name)
     task = TODOIST_API.add_task(content=content, project_id=OBSIDIAN_REWORK_PROJECT_ID, description=description,
                                 due_string="tomorrow")
     return task
 
+def add_obsidian_task_for_activity(file_name, description=None):
+    content = "{file_name} §§§ Obsidian-Activity überarbeiten".format(file_name=file_name)
+    task = TODOIST_API.add_task(content=content, project_id=OBSIDIAN_REWORK_PROJECT_ID, description=description,
+                                due_string="tomorrow")
+    return task
 
 def update_obsidian_task(item):
     new_content = "{content} §§§ Obsidian-Notiz überarbeiten".format(content=item.content)
