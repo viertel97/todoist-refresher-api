@@ -76,23 +76,23 @@ def monica_evening():
 
 
 @logger.catch
-@router.post("/monica_for_following_days/{days_in_future}")
-def monica_for_following_days(days_in_future: Annotated[int, Path(title="The ID of the item to get")]):
-    logger.info("start daily - monica (preparation for tomorrow)")
+@router.post("/monica_before_tasks/{days_in_future}")
+def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the item to get")]):
+    logger.info("start daily - monica (preparation for today + " + str(days_in_future) + " days)")
     events = get_events()
-    events_tomorrow, selected_date = was_at_day(events, days_in_future)
+    events_at_selected_date, selected_date = was_at_day(events, days_in_future)
     logger.info(
-        "number of appointments at date ({date}): {length}".format(date=selected_date, length=str(len(events_tomorrow)))
+        "number of appointments at date ({date}): {length}".format(date=selected_date, length=str(len(events_at_selected_date)))
     )
     activities = get_activities(days_in_future)
     logger.info(
         "number of activities at date ({date}): {length}".format(date=selected_date, length=str(len(activities)))
     )
-    list_of_calendar_events = [event[1] for event in events_tomorrow if event[1] is not None]
+    list_of_calendar_events = [event[1] for event in events_at_selected_date if event[1] is not None] # because to check if the event has an "before" task
     # if len(activities) > 0:
     #    activities = update_activities_without_date(activities)
     if len(activities) > 0 or len(list_of_calendar_events) > 0:
-        add_before_tasks(activities, events_tomorrow)
+        add_before_tasks(activities, events_at_selected_date)
     logger.info("end daily - monica (preparation for tomorrow)")
 
 

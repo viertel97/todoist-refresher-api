@@ -126,6 +126,9 @@ def was_at_day(event_list, days, check_for_next_day=False):
                     continue
             start = get_date_or_datetime(event, "start").replace(tzinfo=None).date()
             end = get_date_or_datetime(event, "end").replace(tzinfo=None).date()
+            if (end-start).days >= 1:
+                end = end - timedelta(days=1)
+            # -1 because end is exclusive
             if start <= selected_day <= end:
                 if "description" in event.keys():
                     if "#ignore" not in event["description"]:

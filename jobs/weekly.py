@@ -2,13 +2,14 @@ import datetime
 
 from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
+from quarter_lib_old.notion import get_database
 
 from helper.config_helper import get_value
 from services.file_service import read_not_matched_file
 from services.ght_service import update_ght
 from services.notion_service import (
     DATABASES,
-    get_random_from_notion_technical_projects,
+    get_random_from_notion_technical_projects, get_article_database,
 )
 from services.todoist_service import (
     PROJECT_DICT,
@@ -93,3 +94,14 @@ def not_matched_to_todoist():
     not_matched = read_not_matched_file()
     add_not_matched_task(not_matched)
     logger.info("end not matched to todoist")
+
+
+
+
+@logger.catch
+@router.post("/article_to_audio_routine")
+def article_to_audio_routine():
+    logger.info("start article to audio")
+    db = get_article_database()
+    pass
+# article_to_audio_routine()

@@ -182,7 +182,24 @@ def update_notion_page(page_id):
     r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
 
 
-################################ Habit Tracker ################################
+def get_article_database():
+    article_database = get_value("article", "name", DATABASES)["id"]
+    url = BASE_URL + "databases/" + article_database + "/query"
+    result_list = []
+    body = {"filter": {"property": "Synced-to-Todoist", "checkbox": {"equals": False}}}
+    while True:
+        r = (
+            requests.post(url, headers=HEADERS).json()
+            if body is None
+            else requests.post(url, data=json.dumps(body), headers=HEADERS).json()
+        )
+        for results in r["results"]:
+            result_list.append(results)
+        body = body["start_cursor"] = r.get("next_cursor")
+        if not r["has_more"]:
+            break
+    logger.info("length of result_list: " + str(len(result_list)))
+    return pd.json_normalize(result_list, sep="~")
 
 
 def transform_content(content):
@@ -250,6 +267,7 @@ def update_notion_habit_tracker_page(page_id, completed_habits):
         data = {"properties": {habit: {"checkbox": True}}}
         r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
         logger.info("'" + habit + "' checked on page '" + page_id + "'")
+
 
 def update_notion_habit_tracker():
     acitivites = todoist_history_service.fetch_days_new_new()
@@ -371,6 +389,7 @@ def get_drugs_from_activity(row, drug_date_dict):
             drug_date_dict[happened_at].append(multi_select_item["name"])
     return drug_date_dict
 
+
 def update_priority(page_id_priority):
     url = BASE_URL + "pages/" + page_id_priority[0]
     data = {"properties": {"Priority": {"number": page_id_priority[1]}}}
@@ -379,6 +398,7 @@ def update_priority(page_id_priority):
         print(r.status_code)
         print(r.text)
     return r
+
 
 def stretch_article_list():
     logger.info("stretching Articles")
@@ -413,6 +433,7 @@ def stretch_article_list():
         time.sleep(1)
     logger.info("Done updating Articles")
 
+
 def stretch_project_tasks():
     logger.info("stretching TPT")
     df = get_database(TPT_ID)
@@ -423,9 +444,9 @@ def stretch_project_tasks():
         ["id", "title", "properties~Priority~number",
          "properties~Completed~date~start",
          "properties~Obsolet~checkbox",
-            "properties~Project~multi_select",
+         "properties~Project~multi_select",
          "properties~Effort~select~name",
-            "properties~Status~status~name"
+         "properties~Status~status~name"
          ]
     ]
     df.sort_values(by="properties~Priority~number", inplace=True)
