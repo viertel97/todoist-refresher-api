@@ -132,8 +132,8 @@ def obsidian_random_activity():
             files = get_files("0300_Spaces/Social Circle/Activities")
 
             file = random.choice(files)
-            add_obsidian_task_for_activity(file.name, "Random activity file")
-            logger.info("selected random activity file '{}'".format(file.name))
+            add_obsidian_task_for_activity(file, "Random activity file")
+            logger.info("selected random activity file '{}'".format(file))
 
             logger.info("end bi-daily - obsidian - random activity")
 
