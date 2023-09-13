@@ -9,6 +9,7 @@ from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.responses import JSONResponse
 from quarter_lib.logging import setup_logging
 
+from config.api_documentation import tags_metadata, description, title
 from helper.google_helper import test_service
 from helper.network_helper import log_request_info
 from jobs import (
@@ -33,7 +34,10 @@ logger = setup_logging(__name__)
 logger.info(platform)
 DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
 logger.info(f"DEBUG: {DEBUG}")
-app = FastAPI()
+
+app = FastAPI(openapi_tags=tags_metadata,
+              title=title,
+              description=description)
 
 # app = FastAPI(debug=DEBUG)
 router = APIRouter()
@@ -82,7 +86,7 @@ if __name__ == "__main__":
         # hourly.todoist_to_work_routine()
         # daily.links()
         # daily.monica(False)
-        # daily.monica_before_tasks(2)
+        daily.monica_before_tasks(0)
         # daily.monica(True)
         # daily.update_monica_archive()
         # weekly.tpt()
@@ -98,7 +102,7 @@ if __name__ == "__main__":
         # daily.notion_habit_tracker_stack()
         # bi_weekly.update_book_rework()
         # bi_weekly.update_to_think_about()
-        bi_weekly.obsidian_random_activity()
+        # bi_weekly.obsidian_random_activity()
         # bi_weekly.obsidian_oldest_note()
         # weekly.not_matched_to_todoist()
         # update_koreader_statistics()
