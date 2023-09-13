@@ -79,6 +79,7 @@ if __name__ == "__main__":
     if DEBUG:
         uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
         # hourly.todoist_to_work_routine()
+        # hourly.todoist_to_work_routine()
         # daily.links()
         # daily.monica(False)
         # daily.monica_before_tasks(2)
@@ -97,7 +98,7 @@ if __name__ == "__main__":
         # daily.notion_habit_tracker_stack()
         # bi_weekly.update_book_rework()
         # bi_weekly.update_to_think_about()
-        # bi_weekly.obsidian_random_note()
+        bi_weekly.obsidian_random_activity()
         # bi_weekly.obsidian_oldest_note()
         # weekly.not_matched_to_todoist()
         # update_koreader_statistics()
