@@ -182,24 +182,97 @@ def update_notion_page(page_id):
     r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
 
 
+def update_notion_page_checkbox(page_id, checkbox_name, checkbox_value):
+    url = BASE_URL + "pages/" + page_id
+    data = {"properties": {checkbox_name: {"checkbox": checkbox_value}}}
+    r = requests.patch(url, data=json.dumps(data), headers=HEADERS)
+    if r.status_code == 200:
+        logger.info("Updated notion page " + page_id + " with checkbox " + checkbox_name)
+        return r.json()
+    else:
+        logger.error("Error updating notion page " + page_id + " with checkbox " + checkbox_name)
+
+
 def get_article_database():
     article_database = get_value("article", "name", DATABASES)["id"]
     url = BASE_URL + "databases/" + article_database + "/query"
     result_list = []
-    body = {"filter": {"property": "Synced-to-Todoist", "checkbox": {"equals": False}}}
+    data = {
+        "filter": {
+            "and": [
+                {
+                    "property": "Done",
+                    "checkbox": {
+                        "equals": False
+                    }
+                },
+                {
+                    "property": "Not-Available",
+                    "checkbox": {
+                        "equals": False
+                    }
+                },
+                {
+                    "property": "Priority",
+                    "number": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Medium",
+                    "select": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Topics",
+                    "multi_select": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Transcribed-And-Uploaded-To-OneDrive",
+                    "checkbox": {
+                        "equals": False
+                    }
+                },
+                {
+                    "property": "Language",
+                    "select": {
+                        "is_not_empty": True
+                    }
+                },
+            ]
+        }
+    }
     while True:
         r = (
             requests.post(url, headers=HEADERS).json()
-            if body is None
-            else requests.post(url, data=json.dumps(body), headers=HEADERS).json()
+            if data is None
+            else requests.post(url, data=json.dumps(data), headers=HEADERS).json()
         )
         for results in r["results"]:
             result_list.append(results)
-        body = body["start_cursor"] = r.get("next_cursor")
+        data = {"start_cursor": r.get("next_cursor")}
         if not r["has_more"]:
             break
     logger.info("length of result_list: " + str(len(result_list)))
     return pd.json_normalize(result_list, sep="~")
+
+
+def get_text_from_article(row):
+    url = "https://api.notion.com/v1/blocks/" + row["id"]
+    response = requests.get(url, headers=HEADERS).json()
+    if not response['has_children']:
+        return None
+    url = "https://api.notion.com/v1/blocks/" + row["id"] + "/children"
+    response = requests.get(url, headers=HEADERS).json()
+    content = ""
+    for block in response['results']:
+        if block['type'] == 'paragraph':
+            content += block['paragraph']['text'][0]['plain_text']
+    content = content.replace("\n", " ")
+    return content
 
 
 def transform_content(content):

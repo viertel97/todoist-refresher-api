@@ -16,3 +16,5 @@ google-auth-oauthlib==1.0.0
 python-telegram-bot==20.0
 uvicorn==0.23.2
 fastapi==0.103.0
+edge-tts==6.1.8
+pypdf==3.16.0

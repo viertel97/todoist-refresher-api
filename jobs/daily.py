@@ -86,7 +86,7 @@ def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the
     )
     activities = get_activities(days_in_future)
     logger.info(
-        "number of activities at date ({date}): {length}".format(date=selected_date, length=str(len(activities)))
+        "number of activities at sdate ({date}): {length}".format(date=selected_date, length=str(len(activities)))
     )
     list_of_calendar_events = [event[1] for event in events_at_selected_date if event[1] is not None] # because to check if the event has an "before" task
     # if len(activities) > 0:

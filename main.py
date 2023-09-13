@@ -77,11 +77,11 @@ async def custom_exception_handler(request: Request, exc: Exception):
 if __name__ == "__main__":
     print("lol")
     if DEBUG:
-        # uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
+        uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
         # hourly.todoist_to_work_routine()
         # daily.links()
         # daily.monica(False)
-        daily.monica_before_tasks(2)
+        # daily.monica_before_tasks(2)
         # daily.monica(True)
         # daily.update_monica_archive()
         # weekly.tpt()
@@ -102,7 +102,7 @@ if __name__ == "__main__":
         # weekly.not_matched_to_todoist()
         # update_koreader_statistics()
         print("test")
-        # weekly.update_todoist_projects()
+        # weekly.article_to_audio_routine()
     else:
         test_service()
 
