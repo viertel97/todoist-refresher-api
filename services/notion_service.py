@@ -508,7 +508,7 @@ def add_to_technical_project_tasks(database_id, todoist_item):
 def get_drugs_from_activity(row, drug_date_dict):
     happened_at = row['happened_at']
     if happened_at in drug_date_dict.keys():
-        return drug_date_dict[happened_at]
+        return drug_date_dict
     drug_tracker_database_id = get_value("drug", "name", DATABASES)['id']
     url = BASE_URL + "databases/" + drug_tracker_database_id + "/query"
     body = {
