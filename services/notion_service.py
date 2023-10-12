@@ -260,6 +260,73 @@ def get_article_database():
     return pd.json_normalize(result_list, sep="~")
 
 
+def get_article_database_already_downloaded():
+    article_database = get_value("article", "name", DATABASES)["id"]
+    url = BASE_URL + "databases/" + article_database + "/query"
+    result_list = []
+    data = {
+        "filter": {
+            "and": [
+                {
+                    "property": "Done",
+                    "checkbox": {
+                        "equals": False
+                    }
+                },
+                {
+                    "property": "Not-Available",
+                    "checkbox": {
+                        "equals": False
+                    }
+                },
+                {
+                    "property": "Priority",
+                    "number": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Medium",
+                    "select": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Topics",
+                    "multi_select": {
+                        "is_not_empty": True
+                    }
+                },
+                {
+                    "property": "Transcribed-And-Uploaded-To-OneDrive",
+                    "checkbox": {
+                        "equals": True
+                    }
+                },
+                {
+                    "property": "Language",
+                    "select": {
+                        "is_not_empty": True
+                    }
+                },
+            ]
+        }
+    }
+    while True:
+        r = (
+            requests.post(url, headers=HEADERS).json()
+            if data is None
+            else requests.post(url, data=json.dumps(data), headers=HEADERS).json()
+        )
+        for results in r["results"]:
+            result_list.append(results)
+        data = {"start_cursor": r.get("next_cursor")}
+        if not r["has_more"]:
+            break
+    logger.info("length of result_list: " + str(len(result_list)))
+    return pd.json_normalize(result_list, sep="~")
+
+
 def get_text_from_article(row):
     url = "https://api.notion.com/v1/blocks/" + row["id"]
     response = requests.get(url, headers=HEADERS).json()
@@ -369,6 +436,17 @@ def get_random_from_notion_technical_projects(database_id):
     logger.info("update_todoist_and_notion - weekly")
     item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID)
     update_notion_page(selected_row["id"])
+
+
+def get_random_from_notion_articles():
+    df = get_article_database_already_downloaded()
+    if len(df.index) > 0:
+        selected_row = get_priorities(df)
+        title = selected_row["properties~Name~title"][0]["plain_text"]
+        content = "[" + title + "](" + selected_row["url"] + ")"
+        logger.info("update_todoist_and_notion - weekly")
+        item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID)
+        update_notion_page(selected_row["id"])
 
 
 def get_random_from_notion_link_list(database_id, df_projects=None, due={"string": "Tomorrow"}):

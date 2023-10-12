@@ -124,10 +124,12 @@ def was_at_day(event_list, days, check_for_next_day=False):
                 start = datetime.today().replace(hour=7, minute=0, second=0)
                 if not (start <= created):
                     continue
+            # check if event has time or is all day
             start = get_date_or_datetime(event, "start").replace(tzinfo=None).date()
             end = get_date_or_datetime(event, "end").replace(tzinfo=None).date()
-            if (end-start).days >= 1:
-                end = end - timedelta(days=1)
+            if "dateTime" not in event["start"].keys():
+                if (end - start).days >= 1:
+                    end = end - timedelta(days=1)
             # -1 because end is exclusive
             if start <= selected_day <= end:
                 if "description" in event.keys():
@@ -145,7 +147,17 @@ DAILY_LINKS_THRESHOLD = time(hour=16)
 def is_multiday_event(appointment):
     start = get_date_or_datetime(appointment, "start").replace(tzinfo=None)
     end = get_date_or_datetime(appointment, "end").replace(tzinfo=None)
-    if start.date() != end.date():
+
+    if start.date() == end.date():
+        return False
+
+    if "dateTime" in appointment["start"].keys():
+        if start.date() != end.date():
+            return (datetime.today().date() - start.date()).days + 1
+
+    if start.date() != (end.date() - timedelta(
+            days=1)):  # adding 1 day because full day events would otherwise be counted as multiday events
+
         # which day of multiday event (eg. 2nd day)
         return (datetime.today().date() - start.date()).days + 1
     return False

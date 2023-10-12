@@ -3,8 +3,8 @@ import os
 import shutil
 from datetime import datetime
 from pathlib import Path
-import git
 
+import git
 from github import Github
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
@@ -31,13 +31,14 @@ WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 def get_previous_description(previous_desc):
     desc = previous_desc.split("---")
     if len(desc) > 1:
-        desc = desc[1]
-        desc = desc.replace('\r', '').replace('\n', '').replace('\t', '').replace("  ", "")
-        desc = desc.replace(",}", "}")
-        temp_json = json.loads(desc)
-        return {k: v for k, v in temp_json.items() if v}
+        temp_desc = desc[1]
+        temp_desc = temp_desc.replace('\r', '').replace('\n', '').replace('\t', '').replace("  ", "")
+        temp_desc = temp_desc.replace(",}", "}")
+        temp_json = json.loads(temp_desc)
+        # remove two first characters from desc
+        return {k: v for k, v in temp_json.items() if v}, desc[2][1:]
     else:
-        return None
+        return None, previous_desc
 
 
 def generate_metadata(summary, people: list, emotions: list, happened_at, created_at, updated_at, uuid,
@@ -53,12 +54,9 @@ def generate_metadata(summary, people: list, emotions: list, happened_at, create
         "drugs": drugs,
     }
 
-    previous_description = get_previous_description(original_description)
-    if previous_description:
-        metadata_json.update(previous_description)
-        cleaned_description = original_description.split("---")[2]
-    else:
-        cleaned_description = None
+    additional_metadata, cleaned_description = get_previous_description(original_description)
+    if additional_metadata:
+        metadata_json.update(additional_metadata)
 
     return_string = "---\n"
     return_string += json.dumps(metadata_json, indent=4, sort_keys=True, ensure_ascii=False)
@@ -68,7 +66,7 @@ def generate_metadata(summary, people: list, emotions: list, happened_at, create
         return_string += f"- [[{person}]]\n"
     return_string += "\n"
 
-    return return_string, cleaned_description or original_description
+    return return_string, cleaned_description
 
 
 def generate_file_content(summary, description):
@@ -114,12 +112,13 @@ def get_files(path):
     return content_list
 
 
-
-
 def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
     repo = g.get_repo("viertel97/obsidian")
 
     people = "" if sql_entry["people"] is None else sorted(sql_entry["people"].split("~"))
+    # remove "Inbox" from people if it exists
+    if "Inbox" in people:
+        people.remove("Inbox")
     emotions = "" if sql_entry["emotions"] is None else sorted(sql_entry["emotions"].split("~"))
     summary = sql_entry["summary"]
     happened_at = sql_entry["happened_at"]

@@ -77,8 +77,8 @@ def obsidian_random_note():
             files = get_files("0000_Zettelkasten")
 
             file = random.choice(files)
-            add_obsidian_task_for_note(file.name, "Random file")
-            logger.info("selected random file '{}'".format(file.name))
+            add_obsidian_task_for_note(file, "Random file")
+            logger.info("selected random file '{}'".format(file))
 
             logger.info("end bi-daily - obsidian - random note")
 

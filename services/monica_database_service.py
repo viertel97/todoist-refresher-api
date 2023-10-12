@@ -87,7 +87,7 @@ def add_monica_activities(appointment_list):
     close_server_connection(connection)
 
 
-def clean_inbox_activities():
+def get_inbox_activities_to_clean():
     temp_dict = {}
     connection = create_server_connection("monica")
     with connection.cursor() as cursor:
@@ -99,27 +99,30 @@ def clean_inbox_activities():
             if row["activity_id"] not in temp_dict.keys():
                 temp_dict[row["activity_id"]] = []
             temp_dict[row["activity_id"]].append(row["contact_id"])
-        logger.info("Found {len} potential deletions.".format(len=len(temp_dict)))
-        deletion_list = []
-        for temp_key in temp_dict.keys():
-            if len(temp_dict[temp_key]) > 1:
-                logger.info("Deleting activity with id: {activity_id}".format(activity_id=temp_key))
-                try:
-                    cursor.execute(
-                        "DELETE FROM activity_contact WHERE contact_id = 52 and activity_id = %s",
-                        temp_key,
-                    )
-                    connection.commit()
-                except pymysql.err.IntegrityError as e:
-                    logger.error("IntegrityError: {error}".format(error=e))
-                    continue
-                logger.info("Activity with id {activity_id} was deleted".format(activity_id=temp_key))
-                deletion_list.append(temp_key)
     close_server_connection(connection)
-    return deletion_list
+    logger.info("Found {len} potential deletions.".format(len=len(temp_dict)))
+    to_delete_list = []
+    for temp_key in temp_dict.keys():
+        if len(temp_dict[temp_key]) > 1:
+            to_delete_list.append(temp_key)
+    return to_delete_list
 
 
-def add_deleted_activities_to_obsidian(deletion_list):
+def delete_inbox_activity(connection, activity_id):
+    logger.info("Deleting activity with id: {activity_id}".format(activity_id=activity_id))
+    with connection.cursor() as cursor:
+        try:
+            cursor.execute(
+                "DELETE FROM activity_contact WHERE contact_id = 52 and activity_id = %s",
+                activity_id,
+            )
+            connection.commit()
+        except pymysql.err.IntegrityError as e:
+            logger.error("IntegrityError: {error}".format(error=e))
+    logger.info("Activity with id {activity_id} was deleted".format(activity_id=activity_id))
+
+
+def add_to_be_deleted_activities_to_obsidian(deletion_list):
     drug_date_dict = {}
     connection = create_server_connection("monica")
     timestamp = datetime.now()
@@ -131,6 +134,7 @@ def add_deleted_activities_to_obsidian(deletion_list):
                 for row in cursor:
                     drug_date_dict = get_drugs_from_activity(row, drug_date_dict)
                     create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
+                    delete_inbox_activity(connection, activity_id)
             except pymysql.err.IntegrityError as e:
                 logger.error("IntegrityError: {error}".format(error=e))
                 continue

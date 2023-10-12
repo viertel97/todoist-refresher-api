@@ -1,14 +1,15 @@
-import os
 from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter
 from fastapi import Path
 from quarter_lib.logging import setup_logging
+
 from helper.config_helper import get_value
 from helper.database_helper import create_server_connection
+from helper.path_helper import slugify
 from services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
-from services.microsoft_service import get_koreader_settings
+from services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from services.monica_database_service import add_monica_activities, update_archive
 from services.monica_service import (
     add_tasks,
@@ -21,6 +22,7 @@ from services.notion_service import (
     get_random_from_notion_link_list,
     update_notion_habit_tracker,
     update_habit_tracker_vacation_mode, get_page_for_date, stretch_project_tasks, stretch_article_list,
+    get_article_database, get_text_from_article, update_notion_page_checkbox,
 )
 from services.sqlite_service import get_koreader_page_stat, get_koreader_book
 from services.todoist_service import (
@@ -28,6 +30,7 @@ from services.todoist_service import (
     add_before_tasks,
     get_vacation_mode, add_after_vacation_tasks
 )
+from services.tts_service import transcribe
 
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
@@ -41,8 +44,6 @@ PROJECT_IDS = ["2300202317",
                "2306562514"]
 
 RETHINK_PROJECT_ID = "2296630360"
-
-
 
 
 def monica(check_for_next_day=False):
@@ -82,13 +83,15 @@ def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the
     events = get_events()
     events_at_selected_date, selected_date = was_at_day(events, days_in_future)
     logger.info(
-        "number of appointments at date ({date}): {length}".format(date=selected_date, length=str(len(events_at_selected_date)))
+        "number of appointments at date ({date}): {length}".format(date=selected_date,
+                                                                   length=str(len(events_at_selected_date)))
     )
     activities = get_activities(days_in_future)
     logger.info(
         "number of activities at sdate ({date}): {length}".format(date=selected_date, length=str(len(activities)))
     )
-    list_of_calendar_events = [event[1] for event in events_at_selected_date if event[1] is not None] # because to check if the event has an "before" task
+    list_of_calendar_events = [event[1] for event in events_at_selected_date if
+                               event[1] is not None]  # because to check if the event has an "before" task
     # if len(activities) > 0:
     #    activities = update_activities_without_date(activities)
     if len(activities) > 0 and len(list_of_calendar_events) > 0:
@@ -137,18 +140,22 @@ def notion_habit_tracker_stack():
     # check_order_supplements(df)
     logger.info("end - daily notion habit tracker stack")
 
+
 @logger.catch
 @router.post("/stretch_tpt")
 def stretch_tpt():
     logger.info("start daily - stretch tpt")
     stretch_project_tasks()
     logger.info("end daily - stretch tpt")
+
+
 @logger.catch
 @router.post("/stretch_articles")
 def stretch_articles():
     logger.info("start daily - stretch articles")
     stretch_article_list()
     logger.info("end daily - stretch articles")
+
 
 def links():
     logger.info("start daily - links")
@@ -191,3 +198,23 @@ def update_koreader_statistics():
     conn.close()
 
     logger.info("end - daily update koreader statistics")
+
+
+@logger.catch
+@router.post("/article_to_audio_routine")
+async def article_to_audio_routine():
+    logger.info("start article to audio")
+    db = get_article_database()
+    for _, row in db.iterrows():
+        try:
+            text = get_text_from_article(row)
+            if text:
+                language = row["properties~Language~select~name"]
+                filename = slugify(row["properties~Name~title"][0]["plain_text"]) + ".mp3"
+                await transcribe(text, language, filename)
+                upload_transcribed_article_to_onedrive(filename, row["properties~Website~formula~string"])
+                update_notion_page_checkbox(row['id'], "Transcribed-And-Uploaded-To-OneDrive", True)
+            else:
+                logger.warning(f'no text for {row["properties~Name~title"][0]["plain_text"]}')
+        except Exception as e:
+            logger.error(f"error for {row['title']}: {e}")
