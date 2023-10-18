@@ -1,0 +1,22 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+parameters:
+- name: repository # name of the parameter; required
+  type: string # data type of the parameter; required
+
+pool:
+  vmImage: ubuntu-latest
+
+name: $(Date:yyyyMMdd)-$(Build.BuildId)
+
+steps:
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Test'  # The name of your Azure Container Registry
+    repository: 'viertel97/${{ parameters.pool }}'  # The name of the repository
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: latest,$(Build.BuildNumber)

@@ -1,0 +1,15 @@
+name: $(Date:yyyyMMdd)-$(Build.BuildId)
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  - template: variables.yaml
+
+extends:
+  template: pipeline-template.yaml
+  parameters:
+      repository: "todoist-refresher-api"
