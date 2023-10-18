@@ -11,7 +11,8 @@ image:
   tag: "latest"
 
 imagePullSecrets:
-  - ghcr-secret
+  - name: ghcr-secret
+
 nameOverride: ""
 fullnameOverride: ""
 
