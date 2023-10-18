@@ -12,6 +12,7 @@ image:
 
 imagePullSecrets:
   - name: ghcr-secret
+  - name: ghcr-login-secret
 
 nameOverride: ""
 fullnameOverride: ""
