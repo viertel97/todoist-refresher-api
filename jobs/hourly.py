@@ -1,11 +1,11 @@
-import os
-
 from fastapi import APIRouter
+
+from quarter_lib.logging import setup_logging
 
 from helper.config_helper import get_value
 from services.github_service import add_to_work_inbox
-from services.monica_database_service import add_to_microjournal, add_deleted_activities_to_obsidian, \
-    clean_inbox_activities
+from services.monica_database_service import add_to_microjournal, add_to_be_deleted_activities_to_obsidian, \
+    get_inbox_activities_to_clean
 from services.notion_service import (
     DATABASES,
     add_to_technical_project_tasks,
@@ -16,7 +16,6 @@ from services.todoist_service import (
     move_item_to_notion_done,
     get_items_by_content, move_item_to_rethink, move_item_to_work_done
 )
-from quarter_lib.logging import setup_logging
 
 logger = setup_logging(__file__)
 
@@ -35,7 +34,6 @@ tags_metadata = [
     },
 ]
 router = APIRouter(prefix="/hourly", tags=["hourly"])
-
 
 TO_NOTION_LABEL_ID = "2160732004"
 TO_MICROJOURNAL_LABEL_ID = "2161901884"
@@ -72,6 +70,7 @@ def todoist_to_microjournal_routine():
             move_item_to_microjournal_done(item_to_move)
     logger.info("end - hourly todoist to microjournal routine")
 
+
 @logger.catch
 @router.post("/todoist_to_work_routine")
 def todoist_to_work_routine():
@@ -83,6 +82,7 @@ def todoist_to_work_routine():
         for item_to_move in list_to_move:
             move_item_to_work_done(item_to_move)
     logger.info("end - hourly todoist to work-inbox routine")
+
 
 @logger.catch
 @router.post("/todoist_to_rethink_routine")
@@ -104,12 +104,10 @@ def todoist_to_rethink_routine():
 @router.post("/clean_inbox_activities_routine")
 def clean_inbox_activities_routine():
     logger.info("start - hourly clean inbox activities")
-    deletion_list = clean_inbox_activities()
+    deletion_list = get_inbox_activities_to_clean()
     logger.info("number of items to add to obsidian: {length}".format(length=str(len(deletion_list))))
-    logger.info("start - add deleted activities to obsidian")
+    logger.info("start - add to-be deleted activities to obsidian")
     if len(deletion_list) > 0:
-        add_deleted_activities_to_obsidian(deletion_list)
+        add_to_be_deleted_activities_to_obsidian(deletion_list)
     logger.info("end - add deleted activities to obsidian")
     logger.info("end - hourly clean inbox activities")
-
-
