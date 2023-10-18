@@ -7,10 +7,6 @@ parameters:
 - name: repository # name of the parameter; required
   type: string # data type of the parameter; required
 
-pool:
-  vmImage: ubuntu-latest
-
-name: $(Date:yyyyMMdd)-$(Build.BuildId)
 
 stages:
 - stage: Docker
