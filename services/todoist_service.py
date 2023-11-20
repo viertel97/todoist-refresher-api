@@ -120,7 +120,9 @@ def move_items(project_dict, df_projects):
     for project in project_dict.keys():
         for task_id in project_dict[project]:
             project_to_move = df_projects[df_projects.name == project].iloc[0]
-            move_item_to_project(task_id=task_id, project_id=project_to_move["id"])
+            result = move_item_to_project(task_id=task_id, project_id=project_to_move["id"])
+            logger.info("trying to move task {task_id} to project {project} - result: {result}".format(
+                task_id=task_id, project=project, result=result))
 
 
 def get_timestamps():
@@ -312,11 +314,13 @@ def add_obsidian_task_for_note(file_name, description=None):
                                 due_string="tomorrow")
     return task
 
+
 def add_obsidian_task_for_activity(file_name, description=None):
     content = "{file_name} §§§ Obsidian-Activity überarbeiten".format(file_name=file_name)
     task = TODOIST_API.add_task(content=content, project_id=OBSIDIAN_REWORK_PROJECT_ID, description=description,
                                 due_string="tomorrow")
     return task
+
 
 def update_obsidian_task(item):
     new_content = "{content} §§§ Obsidian-Notiz überarbeiten".format(content=item.content)
