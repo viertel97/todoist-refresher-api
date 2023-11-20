@@ -93,7 +93,10 @@ def get_inbox_activities_to_clean():
     with connection.cursor() as cursor:
         cursor.execute(
             """SELECT activity_id, contact_id  from activity_contact ac where activity_id in 
-                (SELECT activity_id FROM activity_contact where contact_id = 52)"""
+                (SELECT activity_id FROM activity_contact where contact_id = 52)
+                and activity_id not in
+                                (SELECT activity_id FROM activity_contact where contact_id = 114)
+            """
         )
         for row in cursor:
             if row["activity_id"] not in temp_dict.keys():
