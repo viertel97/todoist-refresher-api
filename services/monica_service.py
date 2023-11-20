@@ -174,8 +174,8 @@ def add_tasks(api, appointment_list, activities):
                 due = {"string": "Tomorrow"}
             is_multiday = is_multiday_event(appointment)
             if is_multiday:
-                appointment["summary"] = appointment["summary"] + f" (Tag {str(is_multiday)})"
                 appointment['happened_at'] = datetime.today().strftime("%Y-%m-%d")
+                appointment["summary"] = appointment["summary"] + f" (Tag {str(is_multiday)} - {appointment['happened_at']})"
             content = "'" + appointment["summary"] + "'" + " - nacharbeiten & Tracker pflegen"
             logger.info("content: " + str(content))
             description = get_description(activities, calendar_description)
