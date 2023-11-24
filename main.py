@@ -1,3 +1,4 @@
+import os
 import traceback
 from pathlib import Path
 from sys import platform
@@ -33,6 +34,7 @@ logger = setup_logging(__name__)
 
 logger.info(platform)
 DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
+IS_CONTAINER = os.environ.get("IS_CONTAINER", "False") == "True"
 logger.info(f"DEBUG: {DEBUG}")
 
 app = FastAPI(openapi_tags=tags_metadata,
@@ -79,23 +81,24 @@ async def custom_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    print("lol")
-    if DEBUG:
-        uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
+    logger.info("is container {} and debug {}".format(IS_CONTAINER, DEBUG))
+    if DEBUG and IS_CONTAINER:
+        # uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
         # hourly.todoist_to_work_routine()
         # hourly.todoist_to_work_routine()
         # daily.links()
-        # daily.monica(False)
-        daily.monica_before_tasks(0)
-        # daily.monica(True)
+        # daily.monica_morning()
+        # daily.monica_before_tasks(0)
         # daily.update_monica_archive()
-        # weekly.tpt()
+        weekly.update_todoist_projects()
         # weekly.ght_update()
         # weekly.youtube_tasks()
         # daily.update_notion_habit_tracker()
         # daily.vacation_mode_checker()
         # hourly.todoist_to_notion_routine()
         # hourly.todoist_to_rethink_routine()
+        # stretch_tpt()
+        # article_to_do()
         # clean_inbox_activities_routine()
         # hourly.todoist_to_microjournal_routine()
         # daily.monica_calls()

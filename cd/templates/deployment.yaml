@@ -34,12 +34,12 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: ACCESS_ID
+            - name: access_id
               valueFrom:
                 secretKeyRef:
                   name: akeyless-secret
                   key: access_id
-            - name: ACCESS_KEY
+            - name: access_key
               valueFrom:
                 secretKeyRef:
                   name: akeyless-secret
