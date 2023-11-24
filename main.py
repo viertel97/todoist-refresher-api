@@ -35,7 +35,7 @@ logger = setup_logging(__name__)
 logger.info(platform)
 DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
 IS_CONTAINER = os.environ.get("IS_CONTAINER", "False") == "True"
-logger.info(f"DEBUG: {DEBUG}")
+logger.info("is container {} and debug {}".format(IS_CONTAINER, DEBUG))
 
 app = FastAPI(openapi_tags=tags_metadata,
               title=title,
@@ -81,7 +81,6 @@ async def custom_exception_handler(request: Request, exc: Exception):
 
 
 if __name__ == "__main__":
-    logger.info("is container {} and debug {}".format(IS_CONTAINER, DEBUG))
     if DEBUG and IS_CONTAINER:
         # uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9100, workers=1, reload=True)
         # hourly.todoist_to_work_routine()
