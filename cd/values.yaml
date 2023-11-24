@@ -12,7 +12,6 @@ image:
 
 imagePullSecrets:
   - name: ghcr-secret
-  - name: ghcr-login-secret
 
 nameOverride: ""
 fullnameOverride: ""
@@ -51,16 +50,16 @@ ingress:
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - viertel97'
-    #  cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
+    cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
   hosts:
     - host:
       paths:
-        - path: /todoist-refresher-api
+        - path: /
           pathType: Prefix
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  tls:
+  - hosts:
+    - todoist-refresher.viertel-it.de
+    secretName: todoist-refresher-tls
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
