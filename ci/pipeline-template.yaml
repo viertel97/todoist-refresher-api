@@ -19,7 +19,7 @@ stages:
     steps:
     - task: Docker@2
       inputs:
-        containerRegistry: 'Test'  # The name of your Azure Container Registry
+        containerRegistry: 'Test1'  # The name of your Azure Container Registry
         repository: 'viertel97/${{ parameters.repository }}'  # The name of the repository
         command: 'buildAndPush'
         Dockerfile: '**/Dockerfile'
