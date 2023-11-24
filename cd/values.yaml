@@ -52,15 +52,14 @@ ingress:
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - viertel97'
     cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
   hosts:
-    - host:
+    - host: todoist-refresher.viertel-it.de
       paths:
         - path: /
           pathType: Prefix
   tls:
-  - hosts:
-    - todoist-refresher.viertel-it.de
-    secretName: todoist-refresher-tls
-
+    - secretName: tls.todoist-refresher
+      hosts:
+        - todoist-refresher.viertel-it.de
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
