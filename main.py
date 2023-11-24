@@ -32,11 +32,9 @@ controllers = [
 
 logger = setup_logging(__name__)
 
-logger.info(platform)
 DEBUG = (platform == "darwin" or platform == "win32" or platform == "Windows")
 IS_CONTAINER = os.environ.get("IS_CONTAINER", "False") == "True"
-logger.info("is container {} and debug {}".format(IS_CONTAINER, DEBUG))
-
+logger.info("Variables:\nDEBUG: {}\nIS_CONTAINER: {}\nplatform: {}".format(DEBUG, IS_CONTAINER, platform))
 app = FastAPI(openapi_tags=tags_metadata,
               title=title,
               description=description)
