@@ -49,7 +49,9 @@ router = APIRouter()
 async def test():
     raise HTTPException("test")
 
-
+@app.get("/")
+async def ready():
+    return "ready"
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
@@ -111,4 +113,4 @@ if __name__ == "__main__":
     else:
         test_service()
 
-        uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", port=9100, workers=2)
+        uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", port=9100)
