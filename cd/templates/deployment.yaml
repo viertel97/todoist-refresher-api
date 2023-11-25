@@ -51,12 +51,12 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: 9100
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 60
           readinessProbe:
             httpGet:
               path: /
-              port: 9100
+              port: {{ .Values.service.port }}
             initialDelaySeconds: 60
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
