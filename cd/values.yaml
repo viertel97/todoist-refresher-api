@@ -44,15 +44,14 @@ service:
 
 ingress:
   enabled: true
-  className: nginx
   annotations:
     kubernetes.io/ingress.sclass: nginx
     nginx.ingress.kubernetes.io/auth-type: basic
     nginx.ingress.kubernetes.io/auth-secret: basic-auth
     nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - viertel97'
-    cert-manager.io/cluster-issuer: letsencrypt-clusterissuer
+    cert-manager.io/cluster-issuer: letsencrypt
   hosts:
-    - host:
+    - host: todoist-refresher.viertel-it.de
       paths:
         - path: /
           pathType: Prefix
@@ -60,6 +59,7 @@ ingress:
   - hosts:
     - todoist-refresher.viertel-it.de
     secretName: todoist-refresher-tls
+
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
