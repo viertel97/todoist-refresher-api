@@ -50,8 +50,8 @@ async def test():
     raise HTTPException("test")
 
 @app.get("/")
-async def ready():
-    return "ready"
+def health():
+    return {"status": "ok"}
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
