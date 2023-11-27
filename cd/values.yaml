@@ -1,4 +1,4 @@
-# Default values for cd.
+# Default values for todoist-refresher-api.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
@@ -44,7 +44,6 @@ service:
 
 ingress:
   enabled: true
-  className: nginx
   annotations:
     kubernetes.io/ingress.sclass: nginx
     cert-manager.io/cluster-issuer: letsencrypt
@@ -57,9 +56,9 @@ ingress:
         - path: /
           pathType: Prefix
   tls:
-  - hosts:
-    - todoist-refresher.viertel-it.de
-    secretName: todoist-refresher-tls
+    - secretName: tls.todoist-refresher
+      hosts:
+        - todoist-refresher.viertel-it.de
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
