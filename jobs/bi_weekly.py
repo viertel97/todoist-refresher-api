@@ -61,26 +61,13 @@ def obsidian_random_note():
 
     logger.info("start bi-daily - obsidian - random note")
 
-    obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
-    without_due = [item for item in obsidian_rework_items if not item.due]
-    with_due = [item for item in obsidian_rework_items if item.due]
+    files = get_files("0000_Zettelkasten")
 
-    if with_due:
-        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-        for item in with_due:
-            update_task_due(item, tomorrow)
-    else:
-        if without_due:
-            item = without_due[0]
-            update_obsidian_task(item)
-        else:
-            files = get_files("0000_Zettelkasten")
+    file = random.choice(files)
+    add_obsidian_task_for_note(file, "Random file")
+    logger.info("selected random file '{}'".format(file))
 
-            file = random.choice(files)
-            add_obsidian_task_for_note(file, "Random file")
-            logger.info("selected random file '{}'".format(file))
-
-            logger.info("end bi-daily - obsidian - random note")
+    logger.info("end bi-daily - obsidian - random note")
 
 
 @logger.catch
@@ -89,26 +76,13 @@ def obsidian_oldest_note():
 
     logger.info("start bi-daily - obsidian - oldest note")
 
-    obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
-    without_due = [item for item in obsidian_rework_items if not item.due]
-    with_due = [item for item in obsidian_rework_items if item.due]
+    files = get_files_with_modification_date("0000_Zettelkasten")
+    sorted_files = sorted(files, key=lambda x: x['last_modified_date'], reverse=False)
+    file = sorted_files[0]
+    add_obsidian_task_for_note(file['path'], "Oldest file")
+    logger.info("selected oldest file '{}'".format(file['path']))
 
-    if with_due:
-        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-        for item in with_due:
-            update_task_due(item, tomorrow)
-    else:
-        if without_due:
-            item = without_due[0]
-            update_obsidian_task(item)
-        else:
-            files = get_files_with_modification_date("0000_Zettelkasten")
-            sorted_files = sorted(files, key=lambda x: x['last_modified_date'], reverse=False)
-            file = sorted_files[0]
-            add_obsidian_task_for_note(file['path'], "Oldest file")
-            logger.info("selected oldest file '{}'".format(file['path']))
-
-            logger.info("end bi-daily - obsidian - oldest note")
+    logger.info("end bi-daily - obsidian - oldest note")
 
 @logger.catch
 @router.post("/obsidian_random_activity")
@@ -116,26 +90,14 @@ def obsidian_random_activity():
 
     logger.info("start bi-daily - obsidian - random activity")
 
-    obsidian_rework_items = get_items_by_todoist_project(OBSIDIAN_REWORK_PROJECT_ID)
-    without_due = [item for item in obsidian_rework_items if not item.due]
-    with_due = [item for item in obsidian_rework_items if item.due]
 
-    if with_due:
-        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-        for item in with_due:
-            update_task_due(item, tomorrow)
-    else:
-        if without_due:
-            item = without_due[0]
-            update_obsidian_task(item)
-        else:
-            files = get_files("0300_Spaces/Social Circle/Activities")
+    files = get_files("0300_Spaces/Social Circle/Activities")
 
-            file = random.choice(files)
-            add_obsidian_task_for_activity(file, "Random activity file")
-            logger.info("selected random activity file '{}'".format(file))
+    file = random.choice(files)
+    add_obsidian_task_for_activity(file, "Random activity file")
+    logger.info("selected random activity file '{}'".format(file))
 
-            logger.info("end bi-daily - obsidian - random activity")
+    logger.info("end bi-daily - obsidian - random activity")
 
 
 @logger.catch
@@ -144,10 +106,10 @@ def update_book_rework():
     logger.info("start - daily update book rework")
 
     project_ids = get_ids_from_web()
-    project_names = get_project_names_by_ids(project_ids)
-    project_names_concatenated = ','.join(['#' + name for name in project_names])
 
-    items = get_tasks_by_filter(project_names_concatenated)
+    items = []
+    for project_id in project_ids:
+        items.extend(get_items_by_todoist_project(project_id))
 
     items = [{'orig_item': item} for item in items]
     for item in items:
