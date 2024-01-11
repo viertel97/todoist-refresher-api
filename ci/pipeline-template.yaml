@@ -30,9 +30,6 @@ stages:
               command: 'login'
             displayName: 'Login to GHCR'
 
-          - script: "docker pull ghcr.io/viertel97/${{parameters.repository}}:latest"
-            displayName: Pull latest for layer caching
-            continueOnError: true
 
           - ${{ if eq(parameters.multiarch, 'false') }}:
               - task: Bash@3
