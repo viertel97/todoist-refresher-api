@@ -8,13 +8,13 @@ from services.monica_database_service import add_to_microjournal, add_to_be_dele
     get_inbox_activities_to_clean
 from services.notion_service import (
     DATABASES,
-    add_to_technical_project_tasks,
+    add_task_to_notion_database,
 )
 from services.todoist_service import (
     get_items_by_todoist_label,
     move_item_to_microjournal_done,
     move_item_to_notion_done,
-    get_items_by_content, move_item_to_rethink, move_item_to_work_done
+    get_items_by_content, move_item_to_rethink, move_item_to_work_done, complete_task
 )
 
 logger = setup_logging(__file__)
@@ -35,27 +35,28 @@ tags_metadata = [
 ]
 router = APIRouter(prefix="/hourly", tags=["hourly"])
 
-TO_NOTION_LABEL_ID = "2160732004"
+TO_TPT_LABEL_ID = "2160732004"
+TO_MM_LABEL_ID = "2170899508"
+
 TO_MICROJOURNAL_LABEL_ID = "2161901884"
 TO_WORK_LABEL_ID = "2168502713"
 BOOK_REWORK_PROJECT_ID = "2300202317"
 BOOK_REWORK_2_PROJECT_ID = "2301632406"
 BOOK_REWORK_3_PROJECT_ID = "2302294413"
 RETHINK_PROJECT_ID = "2296630360"
-CHAT_GPT_LABEL_ID = "2167263122"
 
 
 @logger.catch
 @router.post("/todoist_to_notion_routine")
-def todoist_to_notion_routine():
-    logger.info("start - hourly todoist to notion routine")
-    list_to_move = get_items_by_todoist_label(TO_NOTION_LABEL_ID)
-    logger.info("number of items to move from Todoist to Notion: {length}".format(length=str(len(list_to_move))))
+def todoist_to_tpt_routine():
+    logger.info("start - hourly todoist to tpt routine")
+    list_to_move = get_items_by_todoist_label(TO_TPT_LABEL_ID)
+    logger.info("number of items to move from Todoist to Notion - TPT: {length}".format(length=str(len(list_to_move))))
     tech_database = get_value("tech", "name", DATABASES)["id"]
     for item_to_move in list_to_move:
-        add_to_technical_project_tasks(tech_database, item_to_move)
+        add_task_to_notion_database(tech_database, item_to_move)
         move_item_to_notion_done(item_to_move)
-    logger.info("end - hourly todoist to notion routine")
+    logger.info("end - hourly todoist to tpt routine")
 
 
 @logger.catch
@@ -86,18 +87,15 @@ def todoist_to_work_routine():
 
 @logger.catch
 @router.post("/todoist_to_rethink_routine")
-def todoist_to_rethink_routine():
-    logger.info("start - hourly todoist to rethink routine")
-    list_to_move = get_items_by_content(["?!", "!?"])
-    list_to_move.extend(get_items_by_todoist_label(CHAT_GPT_LABEL_ID))
-
-    unique_list_to_move = list({item.content: item for item in list_to_move}.values())
-
-    logger.info(
-        "number of items to move from Todoist to Rethink: {length}".format(length=str(len(unique_list_to_move))))
-    for item_to_move in unique_list_to_move:
-        move_item_to_rethink(item_to_move)
-    logger.info("end - hourly todoist to rethink routine")
+def todoist_to_mm_routine():
+    logger.info("start - hourly todoist to mm routine")
+    list_to_move = get_items_by_todoist_label(TO_MM_LABEL_ID)
+    logger.info("number of items to move from Todoist to Notion - MM: {length}".format(length=str(len(list_to_move))))
+    mm_database = get_value("mindfull_mastery", "name", DATABASES)["id"]
+    for item_to_move in list_to_move:
+        add_task_to_notion_database(mm_database, item_to_move)
+        move_item_to_notion_done(item_to_move)
+    logger.info("end - hourly todoist to mm routine")
 
 
 @logger.catch
