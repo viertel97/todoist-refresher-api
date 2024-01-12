@@ -8,8 +8,7 @@ from services.file_service import read_not_matched_file
 from services.ght_service import update_ght
 from services.notion_service import (
     DATABASES,
-    get_random_from_notion_technical_projects, get_article_database_already_downloaded, update_notion_page,
-    get_random_from_notion_articles, )
+    get_random_from_notion_technical_projects, get_random_from_notion_articles, )
 from services.todoist_service import (
     PROJECT_DICT,
     check_due,
