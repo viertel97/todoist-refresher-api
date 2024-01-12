@@ -42,7 +42,7 @@ spec:
           volumeMounts:
           - name: ssh-keys-v
             readOnly: true
-            mountPath: "/root/ssh"
+            mountPath: "/ssh"
           env:
             - name: access_id
               valueFrom:

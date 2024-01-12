@@ -12,7 +12,7 @@ RUN pip install -r requirements.txt --extra-index-url https://pkgs.dev.azure.com
 ENV IS_CONTAINER=True
 
 EXPOSE 9000
-RUN echo "    IdentityFile /root/ssh/id_rsa" >> /etc/ssh/ssh_config
+RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
 RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 CMD ["python", "main.py"]
 
