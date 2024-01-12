@@ -6,7 +6,7 @@
 parameters:
   - name: repository # name of the parameter; required
     type: string # data type of the parameter; required
-  - name: multiarch
+  - name: multi-arch
     type: string
     default: false
     values:
