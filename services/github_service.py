@@ -19,7 +19,7 @@ github_token = get_secrets(
 
 g = Github(github_token)
 
-temp =  "ssh" / "id_rsa"
+temp = Path("\ssh\id_rsa")
 git_ssh_cmd = 'ssh -i %s' % temp
 branch_name = "main"
 repo_clone_dir = "temp_repo"
