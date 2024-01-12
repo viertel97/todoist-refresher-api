@@ -19,7 +19,7 @@ github_token = get_secrets(
 
 g = Github(github_token)
 
-temp = Path().home() / ".ssh" / "id_rsa"
+temp =  "ssh" / "id_rsa"
 git_ssh_cmd = 'ssh -i %s' % temp
 branch_name = "main"
 repo_clone_dir = "temp_repo"
@@ -80,6 +80,7 @@ def get_files_with_modification_date(path):
     try:
         logger.info(
             f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering last modified date for {path}")
+        logger.info(f"git_ssh_cmd: {git_ssh_cmd}")
         local_repo = git.Repo.clone_from(ssh_url, to_path=repo_clone_dir, branch=branch_name,
                                          env=dict(GIT_SSH_COMMAND=git_ssh_cmd))
 
