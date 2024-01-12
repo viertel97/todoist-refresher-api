@@ -1,7 +1,6 @@
 FROM python:3.9-slim-buster
 ARG PAT
 RUN apt-get update &&  apt-get install -y git
-RUN echo "    IdentityFile /id_rsa" >> /etc/ssh/ssh_config
 
 COPY . .
 
@@ -13,7 +12,8 @@ RUN pip install -r requirements.txt --extra-index-url https://pkgs.dev.azure.com
 ENV IS_CONTAINER=True
 
 EXPOSE 9000
-
+RUN echo "    IdentityFile /root/ssh/id_rsa" >> /etc/ssh/ssh_config
+RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 CMD ["python", "main.py"]
 
 

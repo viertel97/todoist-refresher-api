@@ -38,10 +38,11 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          # mount secret to /ssh
           volumeMounts:
           - name: ssh-keys-v
             readOnly: true
-            mountPath: "/"
+            mountPath: "/root/ssh"
           env:
             - name: access_id
               valueFrom:
