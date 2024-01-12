@@ -31,7 +31,7 @@ stages:
             displayName: 'Login to GHCR'
 
 
-          - ${{ if eq(parameters.multiarch, 'false') }}:
+          - ${{ if eq(parameters.multi-arch, 'false') }}:
               - task: Bash@3
                 inputs:
                   targetType: 'inline'
