@@ -6,7 +6,7 @@
 parameters:
   - name: repository # name of the parameter; required
     type: string # data type of the parameter; required
-  - name: multi-arch
+  - name: multi_arch
     type: string
     default: false
     values:
@@ -31,7 +31,7 @@ stages:
             displayName: 'Login to GHCR'
 
 
-          - ${{ if eq(parameters.multi-arch, 'false') }}:
+          - ${{ if eq(parameters.multi_arch, 'false') }}:
               - task: Bash@3
                 inputs:
                   targetType: 'inline'
