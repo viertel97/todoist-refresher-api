@@ -86,7 +86,7 @@ def todoist_to_work_routine():
 
 
 @logger.catch
-@router.post("/todoist_to_rethink_routine")
+@router.post("/todoist_to_mm_routine")
 def todoist_to_mm_routine():
     logger.info("start - hourly todoist to mm routine")
     list_to_move = get_items_by_todoist_label(TO_MM_LABEL_ID)
