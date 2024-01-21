@@ -44,8 +44,11 @@ PROJECT_DICT = {
     "LONG-TERM | ON HOLD": [],
 }
 
-TO_NOTION_DONE_LABEL_ID = "2160732007"
-NOTION_DONE_SECTION_ID = "100014109"
+TO_TPT_DONE_LABEL_ID = "2160732007"
+TPT_DONE_SECTION_ID = "100014109"
+
+TO_MM_LABEL_ID = "2170899508"
+TO_MM_DONE_LABEL_ID = "2171093939"
 
 TO_MICROJOURNAL_DONE_LABEL_ID = "2161902457"
 MICROJOURNAL_DONE_SECTION_ID = "100014120"
@@ -54,6 +57,7 @@ TO_WORK_DONE_LABEL_ID = "2168502868"
 TO_WORK_DONE_SECTION_ID = "132700483"
 
 STORAGE_PROJECT_ID = "2298105794"
+
 RETHINK_PROJECT_ID = "2296630360"
 TO_RETHINK_DONE_LABEL_ID = "2163807453"
 
@@ -216,27 +220,40 @@ def get_items_by_content(content_list):
     result = [task for task in result if not any(label in task.labels for label in ["To-Rethink-Done"])]
     return result
 
+
 def complete_task(item):
     TODOIST_API.close_task(task_id=item.id)
 
+
 def move_item_to_notion_done(item):
-    move_item_to_section(item.id, section_id=NOTION_DONE_SECTION_ID)
-    set_label(item.id, label_id=TO_NOTION_DONE_LABEL_ID)
+    move_item_to_section(item.id, section_id=TPT_DONE_SECTION_ID)
+
+
+def set_done_label(item, label):
+    if label == "TPT":
+        set_label(item.id, label_id=TO_TPT_DONE_LABEL_ID)
+    elif label == "MM":
+        set_label(item.id, label_id=TO_MM_DONE_LABEL_ID)
+    elif label == "Work":
+        set_label(item.id, label_id=TO_WORK_DONE_LABEL_ID)
+    elif label == "Rethink":
+        set_label(item.id, label_id=TO_RETHINK_DONE_LABEL_ID)
+    elif label == "Microjournal":
+        set_label(item.id, label_id=TO_MICROJOURNAL_DONE_LABEL_ID)
+    else:
+        logger.error("set-done label not found")
 
 
 def move_item_to_work_done(item):
     move_item_to_section(item.id, section_id=TO_WORK_DONE_SECTION_ID)
-    set_label(item.id, label_id=TO_WORK_DONE_LABEL_ID)
 
 
 def move_item_to_microjournal_done(item):
     move_item_to_section(item.id, section_id=MICROJOURNAL_DONE_SECTION_ID)
-    set_label(item.id, label_id=TO_MICROJOURNAL_DONE_LABEL_ID)
 
 
 def move_item_to_rethink(item):
     move_item_to_project(item.id, project_id=RETHINK_PROJECT_ID)
-    set_label(item.id, label_id=TO_RETHINK_DONE_LABEL_ID)
 
 
 # 2. Value is the offset

@@ -14,7 +14,7 @@ from services.todoist_service import (
     get_items_by_todoist_label,
     move_item_to_microjournal_done,
     move_item_to_notion_done,
-    get_items_by_content, move_item_to_rethink, move_item_to_work_done, complete_task
+    get_items_by_content, move_item_to_rethink, move_item_to_work_done, complete_task, set_done_label
 )
 
 logger = setup_logging(__file__)
@@ -56,6 +56,7 @@ def todoist_to_tpt_routine():
     for item_to_move in list_to_move:
         add_task_to_notion_database(tech_database, item_to_move)
         move_item_to_notion_done(item_to_move)
+        set_done_label(item_to_move, "TPT")
     logger.info("end - hourly todoist to tpt routine")
 
 
@@ -69,6 +70,7 @@ def todoist_to_microjournal_routine():
         add_to_microjournal(list_to_move)
         for item_to_move in list_to_move:
             move_item_to_microjournal_done(item_to_move)
+            set_done_label(item_to_move, "Microjournal")
     logger.info("end - hourly todoist to microjournal routine")
 
 
@@ -82,6 +84,7 @@ def todoist_to_work_routine():
         add_to_work_inbox(list_to_move)
         for item_to_move in list_to_move:
             move_item_to_work_done(item_to_move)
+            set_done_label(item_to_move, "Work")
     logger.info("end - hourly todoist to work-inbox routine")
 
 
@@ -95,6 +98,7 @@ def todoist_to_mm_routine():
     for item_to_move in list_to_move:
         add_task_to_notion_database(mm_database, item_to_move)
         move_item_to_notion_done(item_to_move)
+        set_done_label(item_to_move, "MM")
     logger.info("end - hourly todoist to mm routine")
 
 
