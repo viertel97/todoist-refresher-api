@@ -18,3 +18,5 @@ uvicorn==0.23.2
 fastapi==0.103.0
 GitPython==3.1.35
 edge-tts==6.1.8
+
+quarter-lib-old

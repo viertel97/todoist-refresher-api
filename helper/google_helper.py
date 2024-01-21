@@ -1,9 +1,10 @@
 import os
 
 from loguru import logger
+from quarter_lib_old.google import build_calendar_service
 
 from services.monica_database_service import close_server_connection, create_server_connection
-from services.monica_service import build_calendar_service, get_dict
+from services.monica_service import get_dict
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),

@@ -216,6 +216,8 @@ def get_items_by_content(content_list):
     result = [task for task in result if not any(label in task.labels for label in ["To-Rethink-Done"])]
     return result
 
+def complete_task(item):
+    TODOIST_API.close_task(task_id=item.id)
 
 def move_item_to_notion_done(item):
     move_item_to_section(item.id, section_id=NOTION_DONE_SECTION_ID)

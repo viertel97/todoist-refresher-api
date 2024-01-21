@@ -469,7 +469,7 @@ def get_random_from_notion_link_list(database_id, df_projects=None, due={"string
     update_notion_page(selected_row["id"])
 
 
-def add_to_technical_project_tasks(database_id, todoist_item):
+def add_task_to_notion_database(database_id, todoist_item):
     url = BASE_URL + "pages"
     if todoist_item.description:
         data = {

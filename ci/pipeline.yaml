@@ -13,3 +13,4 @@ extends:
   template: pipeline-template.yaml
   parameters:
       repository: "todoist-refresher-api"
+      multi_arch: "false"

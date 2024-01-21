@@ -1,19 +1,18 @@
 FROM python:3.9-slim-buster
 ARG PAT
-RUN apt-get update && apt-get upgrade -y && apt-get install -y git
+RUN apt-get update &&  apt-get install -y git
 
 COPY . .
 
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt
-RUN pip install --upgrade --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/ quarter-lib-old
-
+RUN pip install  --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/ -r requirements.txt
 
 ENV IS_CONTAINER=True
 
 EXPOSE 9000
-
+RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
+RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 CMD ["python", "main.py"]
 
 
