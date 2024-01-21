@@ -145,9 +145,17 @@ def notion_habit_tracker_stack():
 @router.post("/stretch_tpt")
 def stretch_tpt():
     logger.info("start daily - stretch tpt")
-    stretch_project_tasks()
+    database_id = "b3042bf44bd14f40b0167764a0107c2f"
+    stretch_project_tasks(database_id)
     logger.info("end daily - stretch tpt")
 
+@logger.catch
+@router.post("/stretch_mm")
+def stretch_mm():
+    logger.info("start daily - stretch mm")
+    database_id = "4e5cc9cbbaf741ddbb4b38ac919ae1f1"
+    stretch_project_tasks(database_id)
+    logger.info("end daily - stretch mm")
 
 @logger.catch
 @router.post("/stretch_articles")
