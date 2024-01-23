@@ -26,7 +26,7 @@ stages:
         steps:
           - task: Docker@2
             inputs:
-              containerRegistry: 'github.com_viertel97'
+              containerRegistry: 'GHCR'
               command: 'login'
             displayName: 'Login to GHCR'
 
