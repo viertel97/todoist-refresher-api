@@ -10,7 +10,7 @@ RUN pip install  --extra-index-url https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure
 
 ENV IS_CONTAINER=True
 
-EXPOSE 9000
+EXPOSE 9100
 RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
 RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 CMD ["python", "main.py"]
