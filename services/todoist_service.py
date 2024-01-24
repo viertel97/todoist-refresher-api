@@ -366,3 +366,12 @@ def get_tasks_by_filter(filter_name):
 
 def get_project_names_by_ids(project_ids):
     return [TODOIST_API.get_project(project_id).name for project_id in project_ids]
+
+
+def get_rework_projects():
+    projects = TODOIST_API.get_projects()
+    rework_projects = []
+    for project in projects:
+        if project.name.startswith("Book-Rework"):
+            rework_projects.append(project)
+    return rework_projects
