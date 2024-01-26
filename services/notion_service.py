@@ -585,10 +585,10 @@ def stretch_article_list():
     logger.info("Done updating Articles")
 
 
-def stretch_project_tasks():
-    logger.info("stretching TPT")
-    df = get_database(TPT_ID)
-    logger.info("got TPT")
+def stretch_project_tasks(database_id):
+    logger.info("stretching database with id " + database_id)
+    df = get_database(database_id)
+    logger.info("got database with id " + database_id)
     df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
     df.drop(columns=["properties~Name~title"], inplace=True)
     df = df[
@@ -609,7 +609,7 @@ def stretch_project_tasks():
     df = df[df["properties~Project~multi_select"].str.len() != 0]
 
     df.reset_index(drop=True, inplace=True)
-    logger.info("filtered TPT & starting to update")
+    logger.info("filtered & starting to update with id " + database_id)
     for index, row in df.iterrows():
         update_priority((df.iloc[index]["id"], index + 1))
         if (index + 1) % 10 == 0:
@@ -617,4 +617,4 @@ def stretch_project_tasks():
         if (index + 1) % 30 == 0:
             logger.info(f"updated {index + 1} rows")
         time.sleep(1)
-    logger.info("Done updating TPT")
+    logger.info("Done updating database with id " + database_id)

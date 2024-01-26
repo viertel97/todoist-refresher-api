@@ -2,17 +2,13 @@ import os
 import random
 from datetime import datetime, timedelta
 
-import requests
 from fastapi import APIRouter
 from loguru import logger
 
-from helper.caching import ttl_cache
 from services.github_service import get_files, get_files_with_modification_date
 from services.todoist_service import (
-    update_obsidian_task,
     get_items_by_todoist_project,
-    update_task_due, add_obsidian_task_for_note, OBSIDIAN_REWORK_PROJECT_ID, check_if_last_item, get_tasks_by_filter,
-    get_project_names_by_ids, add_obsidian_task_for_activity
+    update_task_due, add_obsidian_task_for_note, check_if_last_item, add_obsidian_task_for_activity, get_rework_projects
 )
 
 router = APIRouter(prefix="/bi_weekly", tags=["bi_weekly"])
@@ -25,16 +21,6 @@ logger.add(
 )
 
 RETHINK_PROJECT_ID = "2296630360"
-
-PROJECT_IDS_URL = "https://viertel-it.de/files/rework_project_ids.json"
-
-
-@ttl_cache(ttl=60 * 60)
-def get_ids_from_web():
-    logger.info("getting ids from web")
-    response = requests.get(PROJECT_IDS_URL, headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
-    data = response.json()
-    return data
 
 
 @logger.catch
@@ -58,7 +44,6 @@ def update_to_think_about():
 @logger.catch
 @router.post("/obsidian_random_note")
 def obsidian_random_note():
-
     logger.info("start bi-daily - obsidian - random note")
 
     files = get_files("0000_Zettelkasten")
@@ -73,7 +58,6 @@ def obsidian_random_note():
 @logger.catch
 @router.post("/obsidian_oldest_note")
 def obsidian_oldest_note():
-
     logger.info("start bi-daily - obsidian - oldest note")
 
     files = get_files_with_modification_date("0000_Zettelkasten")
@@ -84,12 +68,11 @@ def obsidian_oldest_note():
 
     logger.info("end bi-daily - obsidian - oldest note")
 
+
 @logger.catch
 @router.post("/obsidian_random_activity")
 def obsidian_random_activity():
-
     logger.info("start bi-daily - obsidian - random activity")
-
 
     files = get_files("0300_Spaces/Social Circle/Activities")
 
@@ -105,11 +88,11 @@ def obsidian_random_activity():
 def update_book_rework():
     logger.info("start - daily update book rework")
 
-    project_ids = get_ids_from_web()
+    rework_projects = get_rework_projects()
 
     items = []
-    for project_id in project_ids:
-        items.extend(get_items_by_todoist_project(project_id))
+    for project in rework_projects:
+        items.extend(get_items_by_todoist_project(project.id))
 
     items = [{'orig_item': item} for item in items]
     for item in items:
@@ -143,35 +126,4 @@ def update_book_rework():
 
 
 def article_routine():
-    logger.info("start - daily update book rework")
-
-    project_ids = get_ids_from_web()
-    project_names = get_project_names_by_ids(project_ids)
-    project_names_concatenated = ','.join(['#' + name for name in project_names])
-
-    items = get_tasks_by_filter(project_names_concatenated)
-
-    items = [{'orig_item': item} for item in items]
-    for item in items:
-        content = item['orig_item'].content
-        split_content = content.split(' - ')
-        if (len(split_content) < 2):
-            logger.error("item with content '{}' has no book".format(content))
-            items.remove(item)
-            continue
-        item['annotation'] = split_content[0]
-        item['book'] = split_content[1]
-
-    if len(items) > 0:
-        due_items = [item['orig_item'] for item in items if item['orig_item'].due is not None]
-        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-        if len(due_items) > 0:
-            update_task_due(due_items[0], tomorrow)
-        else:
-            selected_entry = random.choice(items)
-            update_task_due(selected_entry['orig_item'], tomorrow)
-            # items.remove(selected_entry)
-            check_if_last_item(selected_entry['book'], items)
-    else:
-        logger.info("no book entries to review")
-    logger.info("end - daily update book rework")
+    raise "TBD"
