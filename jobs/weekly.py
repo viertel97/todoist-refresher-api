@@ -4,18 +4,17 @@ from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
 
 from helper.config_helper import get_value
-from services.file_service import read_not_matched_file
 from services.ght_service import update_ght
 from services.notion_service import (
     DATABASES,
-    get_random_from_notion_technical_projects, get_random_from_notion_articles, )
+    get_random_from_notion_database, get_random_from_notion_articles, )
 from services.todoist_service import (
     PROJECT_DICT,
     check_due,
     check_next_week,
     get_data,
     get_dates,
-    move_items, add_not_matched_task
+    move_items
 )
 from services.youtube_service import add_video_annotate_task, add_video_transcribe_tasks
 
@@ -61,8 +60,17 @@ def update_todoist_projects():
 def tpt():
     logger.info("start weekly - tpt")
     tech_database = get_value("tech", "name", DATABASES)["id"]
-    get_random_from_notion_technical_projects(tech_database)
+    get_random_from_notion_database(tech_database)
     logger.info("end weekly - tpt")
+
+
+@logger.catch
+@router.post("/mm")
+def mm():
+    logger.info("start weekly - mm")
+    mm_database = get_value("mindfull_mastery", "name", DATABASES)["id"]
+    get_random_from_notion_database(mm_database)
+    logger.info("end weekly - mm")
 
 
 @logger.catch
@@ -93,10 +101,3 @@ def youtube_tasks():
             logger.info("no video to annotate")
             add_video_transcribe_tasks()
     logger.info("end weekly - youtube tasks")
-
-
-def not_matched_to_todoist():
-    logger.info("start not matched to todoist")
-    not_matched = read_not_matched_file()
-    add_not_matched_task(not_matched)
-    logger.info("end not matched to todoist")
