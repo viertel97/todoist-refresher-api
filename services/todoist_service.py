@@ -95,11 +95,14 @@ def check_due(task_id, due, project_id, week_list, df_projects, project_dict):
     # check if year is the same
     due_date = parser.parse(due.date)
 
+    # check if due_date is in past
+    if due_date <= datetime.today():
+        return check_and_add(project_id, task_id, 0, df_projects, project_dict)
+
+
     if due_date.year == datetime.today().year:
         due_date_week = due_date.isocalendar()[1]
-        if (
-                week_list[0] == due_date_week or week_list[0] - 1 == due_date_week
-        ):  # second condition because tasks on sunday or day at execution
+        if (week_list[0] == due_date_week or week_list[0] - 1 == due_date_week):  # second condition because tasks on sunday or day at execution
             return check_and_add(project_id, task_id, 0, df_projects, project_dict)
         elif week_list[1] == due_date_week:
             return check_and_add(project_id, task_id, 1, df_projects, project_dict)
