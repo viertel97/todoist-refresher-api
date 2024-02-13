@@ -578,7 +578,7 @@ def stretch_article_list():
     df.reset_index(drop=True, inplace=True)
     logger.info("filtered Articles & starting to update")
     for index, row in df.iterrows():
-        update_priority((df.iloc[index]["id"], index + 1))
+        update_priority(df.iloc[index]["id"], index + 1, df.iloc[index]["title"])
         if (index + 1) % 10 == 0:
             logger.info(f"updated {index + 1} rows")
         if (index + 1) % 30 == 0:
