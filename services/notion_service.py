@@ -430,7 +430,7 @@ def update_habit_tracker_vacation_mode():
     update_notion_habit_tracker_page(page_id, ["Vacation"])
 
 
-def get_random_from_notion_technical_projects(database_id):
+def get_random_from_notion_database(database_id):
     selected_row = get_random_row_from_notion_tech_database(database_id)
     content = "[" + selected_row["properties~Name~title~content"] + "](" + selected_row["url"] + ")"
     logger.info("update_todoist_and_notion - weekly")
@@ -541,13 +541,15 @@ def get_drugs_from_activity(row, drug_date_dict):
     return drug_date_dict
 
 
-def update_priority(page_id_priority):
-    url = BASE_URL + "pages/" + page_id_priority[0]
-    data = {"properties": {"Priority": {"number": page_id_priority[1]}}}
+def update_priority(id, priority, title):
+    url = BASE_URL + "pages/" + id
+    data = {"properties": {"Priority": {"number": priority}}}
     r = requests.patch(url, data=json.dumps(data), headers=HEADERS)
     if r.status_code != 200:
-        print(r.status_code)
-        print(r.text)
+        logger.error(r.status_code)
+        logger.error(r.text)
+    else:
+        logger.info(f"Updated priority for '{title}' ({id}) to '{priority}'")
     return r
 
 
@@ -576,7 +578,7 @@ def stretch_article_list():
     df.reset_index(drop=True, inplace=True)
     logger.info("filtered Articles & starting to update")
     for index, row in df.iterrows():
-        update_priority((df.iloc[index]["id"], index + 1))
+        update_priority(df.iloc[index]["id"], index + 1, df.iloc[index]["title"])
         if (index + 1) % 10 == 0:
             logger.info(f"updated {index + 1} rows")
         if (index + 1) % 30 == 0:
@@ -611,7 +613,7 @@ def stretch_project_tasks(database_id):
     df.reset_index(drop=True, inplace=True)
     logger.info("filtered & starting to update with id " + database_id)
     for index, row in df.iterrows():
-        update_priority((df.iloc[index]["id"], index + 1))
+        update_priority(df.iloc[index]["id"], index + 1, df.iloc[index]["title"])
         if (index + 1) % 10 == 0:
             logger.info(f"updated {index + 1} rows")
         if (index + 1) % 30 == 0:

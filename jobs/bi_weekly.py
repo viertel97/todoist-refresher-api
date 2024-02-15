@@ -22,25 +22,6 @@ logger.add(
 
 RETHINK_PROJECT_ID = "2296630360"
 
-
-@logger.catch
-@router.post("/update_to_think_about")
-def update_to_think_about():
-    logger.info("start - bi daily update to think about")
-    items = get_items_by_todoist_project(RETHINK_PROJECT_ID)
-    if len(items) > 0:
-        due_items = [item for item in items if item.due is not None]
-        tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-        if len(due_items) > 0:
-            update_task_due(due_items[0], tomorrow)
-        else:
-            item = items[0]
-            update_task_due(item, tomorrow)
-    else:
-        logger.info("no book entries to review")
-    logger.info("end - bi daily update to think about")
-
-
 @logger.catch
 @router.post("/obsidian_random_note")
 def obsidian_random_note():
@@ -123,7 +104,3 @@ def update_book_rework():
     else:
         logger.info("no book entries to review")
     logger.info("end - daily update book rework")
-
-
-def article_routine():
-    raise "TBD"
