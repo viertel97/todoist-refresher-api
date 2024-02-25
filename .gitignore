@@ -1,4 +1,5 @@
 notebooks
+requirements_custom.txt
 cred.env
 
 *.code-workspace
