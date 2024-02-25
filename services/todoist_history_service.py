@@ -7,10 +7,12 @@ import pytz
 from loguru import logger
 
 from helper.config_helper import get_config
+from helper.web_helper import get_habits_from_web
 from services.todoist_service import get_todoist_activity
 
 HABITS_PROJECT_ID = str(2244708745)
-HABITS = get_config("habit_list_config.json")
+HABITS = get_habits_from_web()
+habit_list = [x["name"] for x in HABITS]
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -79,7 +81,6 @@ def fetch_days_new_new():
         del activity[i]["extra_data"]
     df = pd.DataFrame(activity)
     df["event_date"] = pd.to_datetime(df["event_date"])
-    habit_list = [x["name"] for x in HABITS]
     df = df[df.content.isin(habit_list)]
     return df
 
@@ -106,7 +107,6 @@ def fetch_days_new(days=2):
     df = pd.DataFrame(activity)
     df["event_date"] = pd.to_datetime(df["event_date"])
     df = df.loc[(df["event_date"] >= start) & (df["event_date"] <= end)]
-    habit_list = [x["name"] for x in HABITS]
     df = df[df.content.isin(habit_list)]
     return df
 
@@ -140,6 +140,5 @@ def fetch_days(days=2):
         )
         act_df = act_df.append(new_df)
         length = len(act_df)
-    habit_list = [x["name"] for x in HABITS]
     act_df = act_df[act_df.content.isin(habit_list)]
     return act_df

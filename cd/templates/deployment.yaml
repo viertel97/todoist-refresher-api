@@ -54,6 +54,11 @@ spec:
                 secretKeyRef:
                   name: akeyless-secret
                   key: access_key
+            - name: habit_list
+              valueFrom:
+                secretKeyRef:
+                  name: todoist-refresher-secret
+                  key: habit_list
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
