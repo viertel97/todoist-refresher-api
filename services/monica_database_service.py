@@ -126,6 +126,7 @@ def delete_inbox_activity(connection, activity_id):
 
 
 def add_to_be_deleted_activities_to_obsidian(deletion_list):
+    deleted_list = []
     drug_date_dict = {}
     connection = create_server_connection("monica")
     timestamp = datetime.now()
@@ -138,11 +139,15 @@ def add_to_be_deleted_activities_to_obsidian(deletion_list):
                     drug_date_dict = get_drugs_from_activity(row, drug_date_dict)
                     create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
                     delete_inbox_activity(connection, activity_id)
+                    deleted_list.append(row)
             except pymysql.err.IntegrityError as e:
                 logger.error("IntegrityError: {error}".format(error=e))
                 continue
             logger.info("Activity with id {activity_id} was added to obsidian".format(activity_id=activity_id))
     close_server_connection(connection)
+    return deleted_list
+
+
 
 
 def add_to_microjournal(microjournal_list):
