@@ -110,6 +110,9 @@ def clean_inbox_activities_routine():
     logger.info("number of items to add to obsidian: {length}".format(length=str(len(deletion_list))))
     logger.info("start - add to-be deleted activities to obsidian")
     if len(deletion_list) > 0:
-        add_to_be_deleted_activities_to_obsidian(deletion_list)
+        deleted_list = add_to_be_deleted_activities_to_obsidian(deletion_list)
+    else:
+        deleted_list = []
     logger.info("end - add deleted activities to obsidian")
     logger.info("end - hourly clean inbox activities")
+    return {"deleted_list": deleted_list}
