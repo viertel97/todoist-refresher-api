@@ -523,10 +523,13 @@ def get_drugs_from_activity(row, drug_date_dict):
     result_list = []
     while True:
         r = requests.post(url, data=json.dumps(body), headers=HEADERS).json()
-        for results in r["results"]:
-            result_list.append(results)
-        body["start_cursor"] = r.get("next_cursor")
-        if not r["has_more"]:
+        try:
+            for results in r["results"]:
+                result_list.append(results)
+            body["start_cursor"] = r.get("next_cursor")
+            if not r["has_more"]:
+                break
+        except Exception as e:
             break
     if not len(result_list):
         return drug_date_dict
