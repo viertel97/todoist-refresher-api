@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Annotated
+import copy
 
 from fastapi import APIRouter
 from fastapi import Path
@@ -239,10 +240,15 @@ def umlaut_sort_key(word):
 @router.post("/order_shopping_list_categories")
 async def order_shopping_list_categories():
     logger.info("start daily - order shopping list categories")
-    categories = get_categories_data_from_web()
+    old_categories = get_categories_data_from_web()
+    categories = copy.deepcopy(old_categories)
 
     for section in categories:
         section['items'] = sorted(section['items'], key=umlaut_sort_key)
 
-    save_categories_data_to_web(categories)
+    if categories != old_categories:
+        logger.info("categories changed - saving")
+        save_categories_data_to_web(categories)
+    else:
+        logger.info("categories not changed")
     logger.info("end daily - order shopping list categories")
