@@ -8,6 +8,7 @@ from quarter_lib.logging import setup_logging
 from helper.config_helper import get_value
 from helper.database_helper import create_server_connection
 from helper.path_helper import slugify
+from helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
 from services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
 from services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from services.monica_database_service import add_monica_activities, update_archive
@@ -58,6 +59,8 @@ def monica(check_for_next_day=False):
     logger.info("found " + str(len(events_today)) + " Google Calendar events")
     events_today = [event for event in events_today if filter_event(event[0]["summary"])]
     if len(events_today) > 0:
+        # TODO: add matched schema so afterwards we can also add
+        #  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
         add_tasks(TODOIST_API, events_today, activities)
         add_monica_activities(events_today)
 
@@ -226,3 +229,20 @@ async def article_to_audio_routine():
                 logger.warning(f'no text for {row["properties~Name~title"][0]["plain_text"]}')
         except Exception as e:
             logger.error(f"error for {row['title']}: {e}")
+
+
+def umlaut_sort_key(word):
+    translation_table = str.maketrans('äöüÄÖÜ', 'aouAOU')
+    return word.translate(translation_table)
+
+@logger.catch
+@router.post("/order_shopping_list_categories")
+async def order_shopping_list_categories():
+    logger.info("start daily - order shopping list categories")
+    categories = get_categories_data_from_web()
+
+    for section in categories:
+        section['items'] = sorted(section['items'], key=umlaut_sort_key)
+
+    save_categories_data_to_web(categories)
+    logger.info("end daily - order shopping list categories")
