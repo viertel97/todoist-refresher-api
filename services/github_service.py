@@ -139,7 +139,8 @@ def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
 
     file_content = generate_file_content(summary, cleaned_description)
     logger.info(f"Creating {file_name} in github with content:\n{metadata + file_content}")
-    repo.create_file(path="0300_Spaces/Social Circle/Activities/" + file_name,
+    repo.create_file(path=f"0300_Spaces/Social Circle/Activities/{str(happened_at.year)}/"
+                           + file_name,
                      message=f"obsidian-refresher: {run_timestamp}", content=metadata + file_content)
     logger.info(f"Created {file_name} in github")
 
