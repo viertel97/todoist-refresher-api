@@ -16,6 +16,8 @@ from services.todoist_service import get_default_offset
 DEFAULT_ACCOUNT_ID = 1
 INBOX_CONTACT_ID = 52
 MICROJOURNAL_CONTACT_ID = 58
+BLOCKER_CONTACT_ID = 114
+NO_GITHUB_CONTACT_ID = 160
 
 logger.add(
     os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
@@ -93,10 +95,10 @@ def get_inbox_activities_to_clean():
     with connection.cursor() as cursor:
         cursor.execute(
             """SELECT activity_id, contact_id  from activity_contact ac where activity_id in 
-                (SELECT activity_id FROM activity_contact where contact_id = 52)
+                (SELECT activity_id FROM activity_contact where contact_id = %s)
                 and activity_id not in
-                                (SELECT activity_id FROM activity_contact where contact_id = 114)
-            """
+                                (SELECT activity_id FROM activity_contact where contact_id = %s)
+            """, (INBOX_CONTACT_ID, BLOCKER_CONTACT_ID)
         )
         for row in cursor:
             if row["activity_id"] not in temp_dict.keys():
@@ -106,6 +108,8 @@ def get_inbox_activities_to_clean():
     logger.info("Found {len} potential deletions.".format(len=len(temp_dict)))
     to_delete_list = []
     for temp_key in temp_dict.keys():
+        if NO_GITHUB_CONTACT_ID in temp_dict[temp_key]:
+            temp_dict[temp_key].remove(NO_GITHUB_CONTACT_ID)
         if len(temp_dict[temp_key]) > 1:
             to_delete_list.append(temp_key)
     return to_delete_list
@@ -116,8 +120,12 @@ def delete_inbox_activity(connection, activity_id):
     with connection.cursor() as cursor:
         try:
             cursor.execute(
-                "DELETE FROM activity_contact WHERE contact_id = 52 and activity_id = %s",
-                activity_id,
+                "DELETE FROM activity_contact WHERE contact_id = %s and activity_id = %s",
+                (INBOX_CONTACT_ID, activity_id)
+            )
+            cursor.execute(
+                "DELETE FROM activity_contact WHERE contact_id = %s and activity_id = %s",
+                (NO_GITHUB_CONTACT_ID, activity_id)
             )
             connection.commit()
         except pymysql.err.IntegrityError as e:
@@ -137,7 +145,8 @@ def add_to_be_deleted_activities_to_obsidian(deletion_list):
                 cursor.execute(query)
                 for row in cursor:
                     drug_date_dict = get_drugs_from_activity(row, drug_date_dict)
-                    create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
+                    if "No-GitHub" not in row["people"]:
+                        create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
                     delete_inbox_activity(connection, activity_id)
                     deleted_list.append(row)
             except pymysql.err.IntegrityError as e:
@@ -146,8 +155,6 @@ def add_to_be_deleted_activities_to_obsidian(deletion_list):
             logger.info("Activity with id {activity_id} was added to obsidian".format(activity_id=activity_id))
     close_server_connection(connection)
     return deleted_list
-
-
 
 
 def add_to_microjournal(microjournal_list):
