@@ -10,6 +10,7 @@ from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 
 from helper.path_helper import slugify
+from services.telegram_service import send_to_telegram
 
 logger = setup_logging(__file__)
 
@@ -61,7 +62,7 @@ def generate_metadata(summary, people: list, emotions: list, happened_at, create
     return_string = "---\n"
     return_string += json.dumps(metadata_json, indent=4, sort_keys=True, ensure_ascii=False)
     return_string += "\n---\n\n"
-    return_string += f"# People\n"
+    return_string += "# People\n"
     for person in people:
         return_string += f"- [[{person}]]\n"
     return_string += "\n"
@@ -113,8 +114,17 @@ def get_files(path):
     return content_list
 
 
-def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
+async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
     repo = g.get_repo("viertel97/obsidian")
+
+    # check if the file already exists
+    file_name = slugify(sql_entry['filename']) + ".md"
+    file_path = f"0300_Spaces/Social Circle/Activities/{str(sql_entry['happened_at'].year)}/" + file_name
+
+    if file_path in get_files("0300_Spaces/Social Circle/Activities"):
+        logger.info(f"File {file_name} already exists in github")
+        await send_to_telegram(f"File {file_name} already exists in github")
+        return
 
     people = "" if sql_entry["people"] is None else sorted(sql_entry["people"].split("~"))
     # remove "Inbox" from people if it exists
@@ -130,7 +140,6 @@ def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
 
     drugs = drug_date_dict.get(happened_at, [])
 
-    file_name = slugify(sql_entry['filename']) + ".md"
     logger.info(f"Changing filename from {sql_entry['filename']} to {file_name}")
 
     metadata, cleaned_description = generate_metadata(summary, people, emotions, happened_at, created_at, updated_at,
@@ -139,8 +148,7 @@ def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
 
     file_content = generate_file_content(summary, cleaned_description)
     logger.info(f"Creating {file_name} in github with content:\n{metadata + file_content}")
-    repo.create_file(path=f"0300_Spaces/Social Circle/Activities/{str(happened_at.year)}/"
-                           + file_name,
+    repo.create_file(path=file_path,
                      message=f"obsidian-refresher: {run_timestamp}", content=metadata + file_content)
     logger.info(f"Created {file_name} in github")
 
