@@ -119,7 +119,7 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 
     # check if the file already exists
     file_name = slugify(sql_entry['filename']) + ".md"
-    file_path = f"0300_Spaces/Social Circle/Activities/{str(sql_entry['happened_at'].year)}/" + file_name
+    file_path = f"0300_Spaces/Social Circle/Activities/{str(sql_entry['happened_at'].year)}/{str(sql_entry['happened_at'].strftime('%m-%B'))}/{file_name}"
 
     if file_path in get_files("0300_Spaces/Social Circle/Activities"):
         logger.info(f"File {file_name} already exists in github")
