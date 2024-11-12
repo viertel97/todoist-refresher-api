@@ -96,7 +96,7 @@ def get_files_with_modification_date(path):
         contents = [{"path": k, "last_modified_date": v} for k, v in file_last_modified.items()]
     finally:
         shutil.rmtree("temp_repo")
-
+    contents = [content for content in contents if content["path"].endswith(".md")]
     return contents
 
 
@@ -111,6 +111,7 @@ def get_files(path):
             contents.extend(repo.get_contents(file_content.path))
         else:
             content_list.append(file_content.path)
+    content_list = [file for file in content_list if file.endswith(".md")]
     return content_list
 
 
