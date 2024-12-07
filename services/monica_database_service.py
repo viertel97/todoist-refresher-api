@@ -133,7 +133,7 @@ def delete_inbox_activity(connection, activity_id):
     logger.info("Activity with id {activity_id} was deleted".format(activity_id=activity_id))
 
 
-def add_to_be_deleted_activities_to_obsidian(deletion_list):
+async def add_to_be_deleted_activities_to_obsidian(deletion_list):
     deleted_list = []
     drug_date_dict = {}
     connection = create_server_connection("monica")
@@ -146,7 +146,7 @@ def add_to_be_deleted_activities_to_obsidian(deletion_list):
                 for row in cursor:
                     drug_date_dict = get_drugs_from_activity(row, drug_date_dict)
                     if "No-GitHub" not in row["people"]:
-                        create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
+                        await create_obsidian_markdown_in_git(row, timestamp, drug_date_dict)
                     delete_inbox_activity(connection, activity_id)
                     deleted_list.append(row)
             except pymysql.err.IntegrityError as e:

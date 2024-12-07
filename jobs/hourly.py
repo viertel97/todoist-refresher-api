@@ -1,5 +1,4 @@
 from fastapi import APIRouter
-
 from quarter_lib.logging import setup_logging
 
 from helper.config_helper import get_value
@@ -14,7 +13,7 @@ from services.todoist_service import (
     get_items_by_todoist_label,
     move_item_to_microjournal_done,
     move_item_to_notion_done,
-    get_items_by_content, move_item_to_rethink, move_item_to_work_done, complete_task, set_done_label
+    move_item_to_work_done, set_done_label
 )
 
 logger = setup_logging(__file__)
@@ -104,13 +103,13 @@ def todoist_to_mm_routine():
 
 @logger.catch
 @router.post("/clean_inbox_activities_routine")
-def clean_inbox_activities_routine():
+async def clean_inbox_activities_routine():
     logger.info("start - hourly clean inbox activities")
     deletion_list = get_inbox_activities_to_clean()
     logger.info("number of items to add to obsidian: {length}".format(length=str(len(deletion_list))))
     logger.info("start - add to-be deleted activities to obsidian")
     if len(deletion_list) > 0:
-        deleted_list = add_to_be_deleted_activities_to_obsidian(deletion_list)
+        deleted_list = await add_to_be_deleted_activities_to_obsidian(deletion_list)
     else:
         deleted_list = []
     logger.info("end - add deleted activities to obsidian")
