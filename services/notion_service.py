@@ -12,17 +12,19 @@ from quarter_lib.logging import setup_logging
 import services.todoist_history_service as todoist_history_service
 from helper.config_helper import get_config
 from helper.config_helper import get_value
+from helper.web_helper import get_notion_ids_from_web
 from services.todoist_service import (
     DAILY_SECTION_ID,
     TODOIST_API,
     generate_reminders,
     move_item_to_section,
-    update_task_due, THIS_WEEK_PROJECT_ID,
+    update_task_due,
+    THIS_WEEK_PROJECT_ID,
 )
 
 logger = setup_logging(__file__)
 
-NOTION_TOKEN = get_secrets(['notion/token'])
+NOTION_TOKEN = get_secrets(["notion/token"])
 
 BASE_URL = "https://api.notion.com/v1/"
 HEADERS = {
@@ -31,13 +33,27 @@ HEADERS = {
     "Notion-Version": "2021-08-16",
 }
 
-TPT_ID = "b3042bf44bd14f40b0167764a0107c2f"
-ARTICLES_ID = "7e43eaa4b66b4dc695cd96d55be0aac2"
+NOTION_IDS = get_notion_ids_from_web()
+
+ARTICLES_ID = NOTION_IDS["ARTICLES_ID"]
+TPT_ID = NOTION_IDS["TPT_ID"]
+
+
+
 
 DATABASES = get_config("databases_config.json")
-UNWANTED_COLUMNS = ["Date", 'Day of Week', 'Kater', 'Month', 'Month-Number', 'Name', 'R DATE', 'RELATIVE DATE NUMBER',
-                    'RELATIVE DATE NUMBER - WEEK', 'This-Week'
-                    ]
+UNWANTED_COLUMNS = [
+    "Date",
+    "Day of Week",
+    "Kater",
+    "Month",
+    "Month-Number",
+    "Name",
+    "R DATE",
+    "RELATIVE DATE NUMBER",
+    "RELATIVE DATE NUMBER - WEEK",
+    "This-Week",
+]
 
 
 def get_database(database_id):
@@ -85,7 +101,9 @@ def get_title(row):
 def get_random_row_from_notion_tech_database(database_id):
     df = get_database(database_id)
 
-    df["properties~Name~title~content"] = df["properties~Name~title"].apply(lambda row: get_title(row))
+    df["properties~Name~title~content"] = df["properties~Name~title"].apply(
+        lambda row: get_title(row)
+    )
     df = df[df["properties~Synced-to-Todoist~checkbox"] == False]
     df = df[df["properties~Obsolet~checkbox"] == False]
     df = df[df["properties~Status~status~name"] == "Not started"]
@@ -102,7 +120,9 @@ def get_random_row_from_notion_tech_database(database_id):
                 "url",
             ]
         ]
-        df["properties~Completed~date~start"] = pd.to_datetime(df["properties~Completed~date~start"])
+        df["properties~Completed~date~start"] = pd.to_datetime(
+            df["properties~Completed~date~start"]
+        )
         df = df[df["properties~Completed~date~start"].isnull()]
     except Exception as e:
         df = df[
@@ -152,7 +172,9 @@ def get_random_row_from_link_list(database_id):
                 "last_edited_time",
             ]
         ]
-        df["properties~Dates Read~date~start"] = pd.to_datetime(df["properties~Dates Read~date~start"])
+        df["properties~Dates Read~date~start"] = pd.to_datetime(
+            df["properties~Dates Read~date~start"]
+        )
         df = df[df["properties~Dates Read~date~start"].isnull()]
     except Exception as e:
         df["properties~Dates Read~date~start"] = df["properties~Dates Read~date"]
@@ -187,10 +209,14 @@ def update_notion_page_checkbox(page_id, checkbox_name, checkbox_value):
     data = {"properties": {checkbox_name: {"checkbox": checkbox_value}}}
     r = requests.patch(url, data=json.dumps(data), headers=HEADERS)
     if r.status_code == 200:
-        logger.info("Updated notion page " + page_id + " with checkbox " + checkbox_name)
+        logger.info(
+            "Updated notion page " + page_id + " with checkbox " + checkbox_name
+        )
         return r.json()
     else:
-        logger.error("Error updating notion page " + page_id + " with checkbox " + checkbox_name)
+        logger.error(
+            "Error updating notion page " + page_id + " with checkbox " + checkbox_name
+        )
 
 
 def get_article_database():
@@ -200,48 +226,16 @@ def get_article_database():
     data = {
         "filter": {
             "and": [
-                {
-                    "property": "Done",
-                    "checkbox": {
-                        "equals": False
-                    }
-                },
-                {
-                    "property": "Not-Available",
-                    "checkbox": {
-                        "equals": False
-                    }
-                },
-                {
-                    "property": "Priority",
-                    "number": {
-                        "is_not_empty": True
-                    }
-                },
-                {
-                    "property": "Medium",
-                    "select": {
-                        "is_not_empty": True
-                    }
-                },
-                {
-                    "property": "Topics",
-                    "multi_select": {
-                        "is_not_empty": True
-                    }
-                },
+                {"property": "Done", "checkbox": {"equals": False}},
+                {"property": "Not-Available", "checkbox": {"equals": False}},
+                {"property": "Priority", "number": {"is_not_empty": True}},
+                {"property": "Medium", "select": {"is_not_empty": True}},
+                {"property": "Topics", "multi_select": {"is_not_empty": True}},
                 {
                     "property": "Transcribed-And-Uploaded-To-OneDrive",
-                    "checkbox": {
-                        "equals": False
-                    }
+                    "checkbox": {"equals": False},
                 },
-                {
-                    "property": "Language",
-                    "select": {
-                        "is_not_empty": True
-                    }
-                },
+                {"property": "Language", "select": {"is_not_empty": True}},
             ]
         }
     }
@@ -267,48 +261,16 @@ def get_article_database_already_downloaded():
     data = {
         "filter": {
             "and": [
-                {
-                    "property": "Done",
-                    "checkbox": {
-                        "equals": False
-                    }
-                },
-                {
-                    "property": "Not-Available",
-                    "checkbox": {
-                        "equals": False
-                    }
-                },
-                {
-                    "property": "Priority",
-                    "number": {
-                        "is_not_empty": True
-                    }
-                },
-                {
-                    "property": "Medium",
-                    "select": {
-                        "is_not_empty": True
-                    }
-                },
-                {
-                    "property": "Topics",
-                    "multi_select": {
-                        "is_not_empty": True
-                    }
-                },
+                {"property": "Done", "checkbox": {"equals": False}},
+                {"property": "Not-Available", "checkbox": {"equals": False}},
+                {"property": "Priority", "number": {"is_not_empty": True}},
+                {"property": "Medium", "select": {"is_not_empty": True}},
+                {"property": "Topics", "multi_select": {"is_not_empty": True}},
                 {
                     "property": "Transcribed-And-Uploaded-To-OneDrive",
-                    "checkbox": {
-                        "equals": True
-                    }
+                    "checkbox": {"equals": True},
                 },
-                {
-                    "property": "Language",
-                    "select": {
-                        "is_not_empty": True
-                    }
-                },
+                {"property": "Language", "select": {"is_not_empty": True}},
             ]
         }
     }
@@ -330,14 +292,14 @@ def get_article_database_already_downloaded():
 def get_text_from_article(row):
     url = "https://api.notion.com/v1/blocks/" + row["id"]
     response = requests.get(url, headers=HEADERS).json()
-    if not response['has_children']:
+    if not response["has_children"]:
         return None
     url = "https://api.notion.com/v1/blocks/" + row["id"] + "/children"
     response = requests.get(url, headers=HEADERS).json()
     content = ""
-    for block in response['results']:
-        if block['type'] == 'paragraph':
-            content += block['paragraph']['text'][0]['plain_text']
+    for block in response["results"]:
+        if block["type"] == "paragraph":
+            content += block["paragraph"]["text"][0]["plain_text"]
     content = content.replace("\n", " ")
     return content
 
@@ -361,9 +323,13 @@ def check_habits(data_frame, checked_date):
     start_date = checked_date + timedelta(days=0, hours=6, minutes=0, seconds=0)
     start_date = start_date.replace(tzinfo=None).astimezone(tz=local_tz)
     end_date = (
-        (checked_date + timedelta(days=1, hours=6, minutes=0, seconds=0)).replace(tzinfo=None).astimezone(tz=local_tz)
+        (checked_date + timedelta(days=1, hours=6, minutes=0, seconds=0))
+        .replace(tzinfo=None)
+        .astimezone(tz=local_tz)
     )
-    df = data_frame.loc[(data_frame["event_date"] > start_date) & (data_frame["event_date"] < end_date)]
+    df = data_frame.loc[
+        (data_frame["event_date"] > start_date) & (data_frame["event_date"] < end_date)
+    ]
     return transform_content(df.content)
 
 
@@ -373,9 +339,7 @@ def get_page_for_date(date, database_id=None):
         body = {
             "filter": {
                 "property": "Date",
-                "date": {
-                    "equals": date.strftime("%Y-%m-%d")
-                }
+                "date": {"equals": date.strftime("%Y-%m-%d")},
             }
         }
 
@@ -411,7 +375,9 @@ def update_notion_habit_tracker_page(page_id, completed_habits):
 
 def update_notion_habit_tracker():
     acitivites = todoist_history_service.fetch_days_new_new()
-    start_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+    start_date = datetime.today().replace(
+        hour=0, minute=0, second=0, microsecond=0
+    ) - timedelta(days=1)
     completed_habits = check_habits(acitivites, start_date)
     habit_tracker_database = get_value("habit_tracker", "name", DATABASES)
     page_id = get_page_for_date(
@@ -432,7 +398,13 @@ def update_habit_tracker_vacation_mode():
 
 def get_random_from_notion_database(database_id):
     selected_row = get_random_row_from_notion_tech_database(database_id)
-    content = "[" + selected_row["properties~Name~title~content"] + "](" + selected_row["url"] + ")"
+    content = (
+        "["
+        + selected_row["properties~Name~title~content"]
+        + "]("
+        + selected_row["url"]
+        + ")"
+    )
     logger.info("update_todoist_and_notion - weekly")
     item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID)
     update_notion_page(selected_row["id"])
@@ -449,12 +421,16 @@ def get_random_from_notion_articles():
         update_notion_page(selected_row["id"])
 
 
-def get_random_from_notion_link_list(database_id, df_projects=None, due={"string": "Tomorrow"}):
+def get_random_from_notion_link_list(
+    database_id, df_projects=None, due={"string": "Tomorrow"}
+):
     selected_row = get_random_row_from_link_list(database_id)
     if selected_row["properties~URL~url"]:
         link = selected_row["properties~URL~url"]
     else:
-        link = "https://www.google.com/search?q=" + urllib.parse.quote(selected_row["properties~Name~title~content"])
+        link = "https://www.google.com/search?q=" + urllib.parse.quote(
+            selected_row["properties~Name~title~content"]
+        )
 
     content = "[" + selected_row["properties~Name~title~content"] + "](" + link + ")"
     logger.info("update_todoist_and_notion - daily")
@@ -506,17 +482,15 @@ def add_task_to_notion_database(database_id, todoist_item):
 
 
 def get_drugs_from_activity(row, drug_date_dict):
-    happened_at = row['happened_at']
+    happened_at = row["happened_at"]
     if happened_at in drug_date_dict.keys():
         return drug_date_dict
-    drug_tracker_database_id = get_value("drug", "name", DATABASES)['id']
+    drug_tracker_database_id = get_value("drug", "name", DATABASES)["id"]
     url = BASE_URL + "databases/" + drug_tracker_database_id + "/query"
     body = {
         "filter": {
             "property": "Date",
-            "date": {
-                "equals": happened_at.strftime("%Y-%m-%d")
-            }
+            "date": {"equals": happened_at.strftime("%Y-%m-%d")},
         }
     }
 
@@ -535,7 +509,11 @@ def get_drugs_from_activity(row, drug_date_dict):
         return drug_date_dict
     result = result_list[0]
     result_properties = result["properties"]
-    result_properties = [result_properties[key] for key in result_properties.keys() if key not in UNWANTED_COLUMNS]
+    result_properties = [
+        result_properties[key]
+        for key in result_properties.keys()
+        if key not in UNWANTED_COLUMNS
+    ]
     drug_date_dict[happened_at] = []
     for prop in result_properties:
         multi_select = prop["multi_select"]
@@ -563,13 +541,15 @@ def stretch_article_list():
     df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
     df.drop(columns=["properties~Name~title"], inplace=True)
     df = df[
-        ["id", "title",
-         "properties~Priority~number",
-         "properties~Not-Available~checkbox",
-         "properties~Done~checkbox",
-         "properties~Medium~select~name",
-         "properties~Topics~multi_select"
-         ]
+        [
+            "id",
+            "title",
+            "properties~Priority~number",
+            "properties~Not-Available~checkbox",
+            "properties~Done~checkbox",
+            "properties~Medium~select~name",
+            "properties~Topics~multi_select",
+        ]
     ]
     df.sort_values(by="properties~Priority~number", inplace=True)
     df = df[df["properties~Not-Available~checkbox"] == False]
@@ -597,13 +577,16 @@ def stretch_project_tasks(database_id):
     df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
     df.drop(columns=["properties~Name~title"], inplace=True)
     df = df[
-        ["id", "title", "properties~Priority~number",
-         "properties~Completed~date~start",
-         "properties~Obsolet~checkbox",
-         "properties~Project~multi_select",
-         "properties~Effort~select~name",
-         "properties~Status~status~name"
-         ]
+        [
+            "id",
+            "title",
+            "properties~Priority~number",
+            "properties~Completed~date~start",
+            "properties~Obsolet~checkbox",
+            "properties~Project~multi_select",
+            "properties~Effort~select~name",
+            "properties~Status~status~name",
+        ]
     ]
     df.sort_values(by="properties~Priority~number", inplace=True)
     df = df[df["properties~Obsolet~checkbox"] == False]
