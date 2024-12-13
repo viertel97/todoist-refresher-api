@@ -192,10 +192,15 @@ def monica_calls():
 
 filter_list = ["K"]
 filter_list_in = ["Drive from"]
+filter_list_ends_with = ["'s birthday"]
 
 
 def filter_event(summary):
-    return not (any(ext == summary for ext in filter_list) or any(ext in summary for ext in filter_list_in))
+    # in multiple filters / lines
+    filtered_filter_list = any(ext == summary for ext in filter_list)
+    filtered_filter_list_ends_with = any(summary.endswith(ext) for ext in filter_list_ends_with)
+    filtered_filter_list_in = any(ext in summary for ext in filter_list_in)
+    return not (filtered_filter_list or filtered_filter_list_ends_with or filtered_filter_list_in)
 
 
 def update_koreader_statistics():
