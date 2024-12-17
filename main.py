@@ -107,4 +107,4 @@ if __name__ == "__main__":
 	else:
 		test_service()
 
-		uvicorn.run(f"{Path(__file__).stem}:app", host="localhost", port=9200)
+		uvicorn.run(f"{Path(__file__).stem}:app", host="0.0.0.0", port=9100)
