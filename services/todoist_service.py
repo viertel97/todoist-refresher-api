@@ -179,7 +179,7 @@ def generate_reminders(item, due):
 		"Neuen Paper auf eBook Reader laden",
 		project_id=int(2244466904),
 		due_string=due,
-		label=["Digital"],
+		labels=["Digital"],
 	)
 	add_reminder(item.id, due)
 
@@ -198,7 +198,7 @@ def add_before_tasks(activities, events_tomorrow):
 			"* " + event["summary"] + " - Vorbereitung",
 			project_id="2271705443",
 			description=description_string,
-			label=["Digital"],
+			labels=["Digital"],
 		)
 		update_due(item.id, due, add_reminder=True)
 
@@ -290,7 +290,7 @@ def check_order_supplements(df):
 				key + " bestellen",
 				project_id="2244725398",
 				due_string="tomorrow",
-				label=["Digital"],
+				labels=["Digital"],
 			)
 
 
@@ -300,7 +300,7 @@ def add_after_vacation_tasks():
 
 
 def add_item_and_reminder(content, project_id, due):
-	item = TODOIST_API.add_task(content, project_id=project_id, due_string=due, label=["Digital"])
+	item = TODOIST_API.add_task(content, project_id=project_id, due_string=due, labels=["Digital"])
 	add_reminder(item.id, due)
 
 
@@ -332,7 +332,7 @@ def check_if_last_item(book_title, items):
 		"Buch-Notizen zusammenfassen - {book} - Obsidian-Eintrag überdenken".format(book=book_title),
 		project_id="2300202317",
 		due_string="tomorrow",
-		label=["Digital"],
+		labels=["Digital"],
 	)
 
 
@@ -343,7 +343,7 @@ def add_obsidian_task_for_note(file_name, description=None):
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
 		description=description,
 		due_string="tomorrow",
-		label=["Digital"],
+		labels=["Digital"],
 	)
 	return task
 
@@ -355,7 +355,7 @@ def add_obsidian_task_for_activity(file_name, description=None):
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
 		description=description,
 		due_string="tomorrow",
-		label=["Digital"],
+		labels=["Digital"],
 	)
 	return task
 

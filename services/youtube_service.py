@@ -35,7 +35,7 @@ def add_video_transcribe_tasks():
 					playlist_url=TO_TRANSCRIBE_PLAYLIST_URL,
 				),
 				project_id=THIS_WEEK_PROJECT_ID,
-				label=["Digital"],
+				labels=["Digital"],
 			)
 			return True
 	return False

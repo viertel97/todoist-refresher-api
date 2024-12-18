@@ -196,7 +196,7 @@ def add_tasks(api, appointment_list, activities):
 				content,
 				description=description,
 				project_id="2271705443",
-				label=["Digital"],
+				labels=["Digital"],
 			)
 			logger.info("added Todoist task: " + str(item))
 			result_move = move_item_to_project(item.id, project_id="2244725398")

@@ -373,7 +373,7 @@ def get_random_from_notion_database(database_id):
 	selected_row = get_random_row_from_notion_tech_database(database_id)
 	content = "[" + selected_row["properties~Name~title~content"] + "](" + selected_row["url"] + ")"
 	logger.info("update_todoist_and_notion - weekly")
-	item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, label=["Digital"])
+	item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
 	update_notion_page(selected_row["id"])
 
 
@@ -384,7 +384,7 @@ def get_random_from_notion_articles():
 		title = selected_row["properties~Name~title"][0]["plain_text"]
 		content = "[" + title + "](" + selected_row["url"] + ")"
 		logger.info("update_todoist_and_notion - weekly")
-		item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, label=["Digital"])
+		item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
 		update_notion_page(selected_row["id"])
 
 
@@ -398,11 +398,11 @@ def get_random_from_notion_link_list(database_id, df_projects=None, due={"string
 	content = "[" + selected_row["properties~Name~title~content"] + "](" + link + ")"
 	logger.info("update_todoist_and_notion - daily")
 	if df_projects is None:
-		item = TODOIST_API.add_task(content, label=["Digital"])
+		item = TODOIST_API.add_task(content, labels=["Digital"])
 		move_item_to_section(item, DAILY_SECTION_ID)
 		update_task_due(item, due)
 	else:
-		item = TODOIST_API.add_task(content, due=due, label=["Digital"])
+		item = TODOIST_API.add_task(content, due=due, labels=["Digital"])
 		update_task_due(item.id, due)
 		generate_reminders(item, due)
 	update_notion_page(selected_row["id"])

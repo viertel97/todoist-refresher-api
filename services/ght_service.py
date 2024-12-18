@@ -24,7 +24,7 @@ def update_ght():
 		content="{total}€ überweisen (KW {kw})".format(total=total, kw=kw),
 		description=total_text,
 		project_id="2244466904",
-		label=["Digital"],
+		labels=["Digital"],
 	)
 	update_due(item.id, due, add_reminder=True)
 	logger.info("end update_good_habit_tracker")
