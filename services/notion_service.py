@@ -93,8 +93,8 @@ def get_random_row_from_notion_tech_database(database_id):
 	df = get_database(database_id)
 
 	df["properties~Name~title~content"] = df["properties~Name~title"].apply(lambda row: get_title(row))
-	df = df[df["properties~Synced-to-Todoist~checkbox"] is False]
-	df = df[df["properties~Obsolet~checkbox"] is False]
+	df = df[df["properties~Synced-to-Todoist~checkbox"] == False]
+	df = df[df["properties~Obsolet~checkbox"] == False]
 	df = df[df["properties~Status~status~name"] == "Not started"]
 
 	try:
@@ -177,8 +177,8 @@ def get_random_row_from_link_list(database_id):
 				"last_edited_time",
 			]
 		]
-	df = df[df["properties~Synced-to-Todoist~checkbox"] is False]
-	df = df[df["properties~Not-Available~checkbox"] is False]
+	df = df[df["properties~Synced-to-Todoist~checkbox"] == False]
+	df = df[df["properties~Not-Available~checkbox"] == False]
 	selected_row = get_priorities(df)
 	return selected_row
 
@@ -508,8 +508,8 @@ def stretch_article_list():
 		]
 	]
 	df.sort_values(by="properties~Priority~number", inplace=True)
-	df = df[df["properties~Not-Available~checkbox"] is False]
-	df = df[df["properties~Done~checkbox"] is False]
+	df = df[df["properties~Not-Available~checkbox"] == False]
+	df = df[df["properties~Done~checkbox"] == False]
 	df = df[df["properties~Priority~number"] > 0]
 	df = df[~df["properties~Medium~select~name"].isna()]
 	df = df[df["properties~Topics~multi_select"].str.len() != 0]
@@ -545,7 +545,7 @@ def stretch_project_tasks(database_id):
 		]
 	]
 	df.sort_values(by="properties~Priority~number", inplace=True)
-	df = df[df["properties~Obsolet~checkbox"] is False]
+	df = df[df["properties~Obsolet~checkbox"] == False]
 	df = df[df["properties~Completed~date~start"].isna()]
 	df = df[~df["properties~Priority~number"].isna()]
 	df = df[~df["properties~Effort~select~name"].isna()]

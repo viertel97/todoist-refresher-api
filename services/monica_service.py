@@ -335,7 +335,7 @@ def get_activities(days):
 	merged = merged.merge(contacts, left_on="contact_id", right_on="id", how="left")
 	archived_activities = merged[merged["summary"] == "TBD"]
 	merged["happened_tomorrow"] = merged["happened_at"].apply(lambda row: row == (datetime.today() + timedelta(days=days)).date())
-	merged = merged[merged["happened_tomorrow"] is True]
+	merged = merged[merged["happened_tomorrow"] == True]
 	pre_list = []
 	merged.apply(lambda row: get_pre_from_activity(row, pre_list, archived_activities), axis=1)
 	return pre_list

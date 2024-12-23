@@ -68,7 +68,7 @@ def get_ght_results(offset=-1):
 		inplace=True,
 	)
 	ght["positive"] = ght.apply(is_positive, axis=1)
-	ght = ght[ght["positive"] is True]
+	ght = ght[ght["positive"] == True]
 	ght["timestamp"] = ght["timestamp"].dt.strftime("%H:%M, %d.%m.%Y")
 	current_multiplier = ght["multiplier_x"].sum()
 	ght["text"] = ght.apply(
