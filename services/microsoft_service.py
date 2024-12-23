@@ -65,7 +65,7 @@ def get_file_list(path, access_token):
 		"Content-Type": "application/json",
 	}
 
-	url = base_url + f"me/drive/root:/" + "/".join(path.split("/")) + ":/"
+	url = base_url + "me/drive/root:/" + "/".join(path.split("/")) + ":/"
 	logger.info("get file list from path: " + url)
 	response = requests.get(url, headers=headers)
 	if response.status_code != 200:

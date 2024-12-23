@@ -6,7 +6,6 @@ import pandas as pd
 import pytz
 from loguru import logger
 
-from helper.config_helper import get_config
 from helper.web_helper import get_habits_from_web
 from services.todoist_service import get_todoist_activity
 
@@ -89,7 +88,7 @@ def fetch_days_new(days=2):
 	local_tz = pytz.timezone("Europe/Berlin")
 	start = (datetime.now() - timedelta(days=days)).replace(tzinfo=None, hour=0, minute=0, second=0, microsecond=0).astimezone(tz=local_tz)
 	end = (datetime.now() - timedelta(days=1)).replace(tzinfo=None, hour=23, minute=59, second=59, microsecond=9999).astimezone(tz=local_tz)
-	goal = (datetime.now() - timedelta(days=days)).replace(tzinfo=None).astimezone(tz=local_tz)
+	# goal = (datetime.now() - timedelta(days=days)).replace(tzinfo=None).astimezone(tz=local_tz)
 	activity = get_todoist_activity(event_type="completed", limit=20, offset=0, parent_project_id=HABITS_PROJECT_ID)
 	activity = activity["events"]
 	for i in range(len(activity)):

@@ -159,7 +159,7 @@ async def add_to_be_deleted_activities_to_obsidian(deletion_list):
 	return deleted_list
 
 
-def add_to_microjournal(microjournal_list):
+def add_to_monica_microjournal(microjournal_list):
 	delta, delta_str = get_default_offset()
 	connection = create_server_connection("monica")
 	for microjournal_entry in microjournal_list:

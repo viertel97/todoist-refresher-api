@@ -5,14 +5,15 @@ from helper.config_helper import get_value
 from services.github_service import add_to_work_inbox
 from services.monica_database_service import (
 	add_to_be_deleted_activities_to_obsidian,
-	add_to_microjournal,
 	get_inbox_activities_to_clean,
 )
 from services.notion_service import (
 	DATABASES,
 	add_task_to_notion_database,
 )
+from services.obsidian_service import add_to_obsidian_microjournal
 from services.todoist_service import (
+	complete_task,
 	get_items_by_todoist_label,
 	move_item_to_microjournal_done,
 	move_item_to_notion_done,
@@ -70,10 +71,12 @@ def todoist_to_microjournal_routine():
 	list_to_move = get_items_by_todoist_label(TO_MICROJOURNAL_LABEL_ID)
 	logger.info("number of items to move from Todoist to Microjournal: {length}".format(length=str(len(list_to_move))))
 	if len(list_to_move) > 0:
-		add_to_microjournal(list_to_move)
+		# add_to_monica_microjournal(list_to_move)
+		add_to_obsidian_microjournal(list_to_move)
 		for item_to_move in list_to_move:
 			move_item_to_microjournal_done(item_to_move)
 			set_done_label(item_to_move, "Microjournal")
+			complete_task(item_to_move)
 	logger.info("end - hourly todoist to microjournal routine")
 
 

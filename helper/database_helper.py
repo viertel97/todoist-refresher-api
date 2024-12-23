@@ -1,5 +1,3 @@
-from functools import cache
-
 import pymysql
 from quarter_lib.akeyless import get_target
 

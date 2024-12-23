@@ -68,7 +68,7 @@ def get_ght_results(offset=-1):
 		inplace=True,
 	)
 	ght["positive"] = ght.apply(is_positive, axis=1)
-	ght = ght[ght["positive"] == True]
+	ght = ght[ght["positive"] is True]
 	ght["timestamp"] = ght["timestamp"].dt.strftime("%H:%M, %d.%m.%Y")
 	current_multiplier = ght["multiplier_x"].sum()
 	ght["text"] = ght.apply(
@@ -120,7 +120,7 @@ def add_or_update_row_koreader_page_stat(row, conn, table_name="koreader_page_st
 			f"SELECT * FROM {table_name} WHERE page = %s and start_time = %s",
 			(row["page"], row["start_time"]),
 		)
-		values = list(row.values)
+		list(row.values)
 
 		if cursor.fetchone():
 			print(f"No update needed for {row['id_book']} {row['page']} {row['start_time']}")

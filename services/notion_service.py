@@ -93,8 +93,8 @@ def get_random_row_from_notion_tech_database(database_id):
 	df = get_database(database_id)
 
 	df["properties~Name~title~content"] = df["properties~Name~title"].apply(lambda row: get_title(row))
-	df = df[df["properties~Synced-to-Todoist~checkbox"] == False]
-	df = df[df["properties~Obsolet~checkbox"] == False]
+	df = df[df["properties~Synced-to-Todoist~checkbox"] is False]
+	df = df[df["properties~Obsolet~checkbox"] is False]
 	df = df[df["properties~Status~status~name"] == "Not started"]
 
 	try:
@@ -177,8 +177,8 @@ def get_random_row_from_link_list(database_id):
 				"last_edited_time",
 			]
 		]
-	df = df[df["properties~Synced-to-Todoist~checkbox"] == False]
-	df = df[df["properties~Not-Available~checkbox"] == False]
+	df = df[df["properties~Synced-to-Todoist~checkbox"] is False]
+	df = df[df["properties~Not-Available~checkbox"] is False]
 	selected_row = get_priorities(df)
 	return selected_row
 
@@ -186,7 +186,7 @@ def get_random_row_from_link_list(database_id):
 def update_notion_page(page_id):
 	url = BASE_URL + "pages/" + page_id
 	data = {"properties": {"Synced-to-Todoist": {"checkbox": True}}}
-	r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
+	requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
 
 
 def update_notion_page_checkbox(page_id, checkbox_name, checkbox_value):
@@ -327,9 +327,6 @@ def get_page_for_date(date, database_id=None):
 			if not r["has_more"]:
 				break
 		return pd.json_normalize(result_list, sep="~").iloc[0]
-	elif df is None and database_id is None:
-		raise ValueError("Either database_id or df must be provided")
-	return
 
 
 def get_page_for_date_old(date, database_id=None, df=None):
@@ -344,7 +341,7 @@ def update_notion_habit_tracker_page(page_id, completed_habits):
 	url = BASE_URL + "pages/" + page_id
 	for habit in completed_habits:
 		data = {"properties": {habit: {"checkbox": True}}}
-		r = requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
+		requests.patch(url, data=json.dumps(data), headers=HEADERS).json()
 		logger.info("'" + habit + "' checked on page '" + page_id + "'")
 
 
@@ -373,7 +370,7 @@ def get_random_from_notion_database(database_id):
 	selected_row = get_random_row_from_notion_tech_database(database_id)
 	content = "[" + selected_row["properties~Name~title~content"] + "](" + selected_row["url"] + ")"
 	logger.info("update_todoist_and_notion - weekly")
-	item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
+	TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
 	update_notion_page(selected_row["id"])
 
 
@@ -384,7 +381,7 @@ def get_random_from_notion_articles():
 		title = selected_row["properties~Name~title"][0]["plain_text"]
 		content = "[" + title + "](" + selected_row["url"] + ")"
 		logger.info("update_todoist_and_notion - weekly")
-		item = TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
+		TODOIST_API.add_task(content, project_id=THIS_WEEK_PROJECT_ID, labels=["Digital"])
 		update_notion_page(selected_row["id"])
 
 
@@ -440,7 +437,7 @@ def add_task_to_notion_database(database_id, todoist_item):
 				"Priority": {"type": "number", "number": 0},
 			},
 		}
-	r = requests.post(url, data=json.dumps(data), headers=HEADERS).json()
+	requests.post(url, data=json.dumps(data), headers=HEADERS).json()
 	# logger.info(r)
 
 
@@ -511,8 +508,8 @@ def stretch_article_list():
 		]
 	]
 	df.sort_values(by="properties~Priority~number", inplace=True)
-	df = df[df["properties~Not-Available~checkbox"] == False]
-	df = df[df["properties~Done~checkbox"] == False]
+	df = df[df["properties~Not-Available~checkbox"] is False]
+	df = df[df["properties~Done~checkbox"] is False]
 	df = df[df["properties~Priority~number"] > 0]
 	df = df[~df["properties~Medium~select~name"].isna()]
 	df = df[df["properties~Topics~multi_select"].str.len() != 0]
@@ -548,7 +545,7 @@ def stretch_project_tasks(database_id):
 		]
 	]
 	df.sort_values(by="properties~Priority~number", inplace=True)
-	df = df[df["properties~Obsolet~checkbox"] == False]
+	df = df[df["properties~Obsolet~checkbox"] is False]
 	df = df[df["properties~Completed~date~start"].isna()]
 	df = df[~df["properties~Priority~number"].isna()]
 	df = df[~df["properties~Effort~select~name"].isna()]

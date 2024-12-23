@@ -286,7 +286,7 @@ def check_order_supplements(df):
 		)
 
 		if (used_this_year - supplements[key][1]) % supplements[key][0] - time_to_order == 0:
-			item = TODOIST_API.add_task(
+			TODOIST_API.add_task(
 				key + " bestellen",
 				project_id="2244725398",
 				due_string="tomorrow",
@@ -328,7 +328,7 @@ def check_if_last_item(book_title, items):
 	for item in items:
 		if item["book"] == book_title:
 			return
-	task = TODOIST_API.add_task(
+	TODOIST_API.add_task(
 		"Buch-Notizen zusammenfassen - {book} - Obsidian-Eintrag überdenken".format(book=book_title),
 		project_id="2300202317",
 		due_string="tomorrow",
