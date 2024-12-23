@@ -30,6 +30,7 @@ def generate_front_matter(hierarchy_dict):
 		"summary": hierarchy_dict["summary"],
 		"description": hierarchy_dict["description"],
 		"tags": hierarchy_dict["labels"],
+		"people": ["[[Microjournal]]"],
 	}
 
 	# Remove keys with None values
