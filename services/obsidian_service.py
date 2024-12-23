@@ -30,4 +30,4 @@ def add_to_obsidian_microjournal(list_to_move):
 	for index, row in df_items.iterrows():
 		file = create_file_from_dict(row)
 		list_of_files.append(file)
-	add_files_to_repository(list_of_files, f"todoist-refresher: {now}", "0300_Spaces/Microjournal/Social Circle/")
+	add_files_to_repository(list_of_files, f"todoist-refresher: {now}", "0300_Spaces/Microjournal/")
