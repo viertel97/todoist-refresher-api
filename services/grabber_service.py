@@ -25,7 +25,7 @@ def slugify(value, allow_unicode=False):
 def generate_front_matter(hierarchy_dict):
 	metadata_json = {
 		"created": hierarchy_dict["created_at"].strftime("%Y-%m-%dT%H:%M:%S"),
-		"slugified_title": slugify(hierarchy_dict["summary"]),
+		"slugified_title": slugify(hierarchy_dict["created_at"].strftime("%Y-%m-%dT%H:%M:%S") + "-" + hierarchy_dict["summary"]),
 		"content": hierarchy_dict["content"],
 		"summary": hierarchy_dict["summary"],
 		"description": hierarchy_dict["description"],
