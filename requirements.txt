@@ -8,7 +8,7 @@ todoist_api_python==2.0.1
 loguru==0.6.0
 pytube==12.1.0
 msal==1.20.0
-python-dotenv==0.21.1
+python-dotenv==1.0.1
 quarter_lib==0.0.25
 PyGithub==1.58.2
 google-api-python-client==2.88.0
