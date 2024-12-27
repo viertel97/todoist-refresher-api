@@ -188,14 +188,15 @@ def monica_calls():
 filter_list = ["K"]
 filter_list_in = ["Drive from"]
 filter_list_ends_with = ["'s birthday"]
+filter_list_starts_with = ["Namenstag"]
 
 
 def filter_event(summary):
-	# in multiple filters / lines
 	filtered_filter_list = any(ext == summary for ext in filter_list)
 	filtered_filter_list_ends_with = any(summary.endswith(ext) for ext in filter_list_ends_with)
 	filtered_filter_list_in = any(ext in summary for ext in filter_list_in)
-	return not (filtered_filter_list or filtered_filter_list_ends_with or filtered_filter_list_in)
+	filtered_filter_list_starts_with = any(summary.startswith(ext) for ext in filter_list_starts_with)
+	return not (filtered_filter_list or filtered_filter_list_ends_with or filtered_filter_list_in or filtered_filter_list_starts_with)
 
 
 def update_koreader_statistics():
