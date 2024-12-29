@@ -188,7 +188,7 @@ def monica_calls():
 filter_list = ["K"]
 filter_list_in = ["Drive from"]
 filter_list_ends_with = ["'s birthday"]
-filter_list_starts_with = ["Namenstag"]
+filter_list_starts_with = ["Namenstag", "Hochzeitstag"]
 
 
 def filter_event(summary):
