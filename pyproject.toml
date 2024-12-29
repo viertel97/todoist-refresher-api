@@ -1,22 +1,21 @@
 [project]
 name = "todoist-refresher-api"
 version = "0.1.0"
-description = "todoist-refresher-api"
-authors = [{ name = "viertel97", email = "janik.viertel@outlook.com" }]
+description = "Default template for PDM package"
+authors = [
+    { name = "viertel97", email = "janik.viertel@outlook.com" },
+]
 
 dependencies = [
     "numpy==2.2.1",
     "pandas==2.2.3",
     "pymysql==1.1.1",
-    "python_dateutil==2.9.0.post0",
     "pytz==2024.2",
     "requests==2.32.3",
-    "todoist_api_python==2.1.7",
     "loguru==0.7.3",
     "pytube==15.0.0",
     "msal==1.31.1",
     "python-dotenv==1.0.1",
-    "quarter_lib==0.0.25",
     "PyGithub==2.5.0",
     "google-api-python-client==2.156.0",
     "google-auth-oauthlib==1.2.1",
@@ -27,9 +26,12 @@ dependencies = [
     "edge-tts==7.0.0",
     "langchain-groq==0.2.2",
     "quarter-lib-old",
+    "python-dateutil==2.9.0.post0",
+    "todoist-api-python==2.1.7",
+    "quarter-lib==0.0.25",
 ]
 packages = [{ include = "todo", from = "src" }]
-requires-python = "==3.10.*"
+requires-python = "==3.11.*"
 readme = "README.md"
 license = { text = "MIT" }
 
@@ -50,122 +52,3 @@ install-pre-commit-msg-hook = "pre-commit install --hook-type commit-msg"
 [tool.mypy]
 # Exclude __init__.py files in src and tests directories
 exclude = "^src/__init__.py$|^tests/__init__.py$"
-
-[tool.ruff]
-extend-exclude = ["*.ipynb"]
-
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".ipynb_checkpoints",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pyenv",
-    ".pytest_cache",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    ".vscode",
-    "*.ipynb",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "site-packages",
-    "venv",
-]
-
-# Same as Black.
-line-length = 140
-indent-width = 4
-
-fix = true
-
-
-[tool.ruff.lint]
-
-select = [
-    "ALL", # include all the rules, including new ones
-]
-ignore = [
-    #### modules
-    "ANN", # flake8-annotations
-    "COM", # flake8-commas
-    "C90", # mccabe complexity
-    "DJ",  # django
-    "EXE", # flake8-executable
-    "T10", # debugger
-    "TID", # flake8-tidy-imports
-
-    #### specific rules
-    "D100",   # ignore missing docs
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "D105",
-    "D106",
-    "D107",
-    "D200",
-    "D203",
-    "D205",
-    "D211",
-    "D212",
-    "D400",
-    "D401",
-    "D415",
-    "E402",   # false positives for local imports
-    "E501",   # line too long
-    "TRY003", # external messages in exceptions are too verbose
-    "TD002",
-    "TD003",
-    "FIX002", # too verbose descriptions of todos
-
-    "W191",   # indentation contains tabs
-    "D206",   # docstring should be in quotes
-
-    "ISC001"
-]
-
-# Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
-
-# Allow unused variables when underscore-prefixed.
-dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.format]
-# Like Black, use double quotes for strings.
-quote-style = "double"
-
-# Like Black, indent with spaces, rather than tabs.
-indent-style = "tab"
-
-# Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = false
-
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
-
-# Enable auto-formatting of code examples in docstrings. Markdown,
-# reStructuredText code/literal blocks and doctests are all supported.
-#
-# This is currently disabled by default, but it is planned for this
-# to be opt-out in the future.
-docstring-code-format = false
-
-# Set the line length limit used when formatting code snippets in
-# docstrings.
-#
-# This only has an effect when the `docstring-code-format` setting is
-# enabled.
-docstring-code-line-length = "dynamic"
