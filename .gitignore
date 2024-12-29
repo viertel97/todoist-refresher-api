@@ -1,3 +1,4 @@
+.pdm-python
 notebooks
 requirements_custom.txt
 cred.env

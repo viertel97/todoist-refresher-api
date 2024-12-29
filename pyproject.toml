@@ -39,7 +39,7 @@ license = { text = "MIT" }
 distribution = false
 
 [tool.pdm.dev-dependencies]
-dev = ["pdm>=2.18.3"]
+dev = ["pdm>=2.18.3", "pre-commit>=2.15.0"]
 linting = ["ruff>=0.7.1"]
 security = ["bandit>=1.7.10"]
 type-checking = ["mypy>=1.13.0"]
@@ -52,3 +52,8 @@ install-pre-commit-msg-hook = "pre-commit install --hook-type commit-msg"
 [tool.mypy]
 # Exclude __init__.py files in src and tests directories
 exclude = "^src/__init__.py$|^tests/__init__.py$"
+
+[[tool.pdm.source]]
+name = "Quarter-Lib-Old"
+url = "https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/"
+include_packages = ["quarter-lib-old"]

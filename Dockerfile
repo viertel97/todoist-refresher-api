@@ -13,7 +13,6 @@ COPY pyproject.toml pdm.lock README.md /project/
 
 # install dependencies and project into the local packages directory
 WORKDIR /project
-RUN pdm config --local pypi.url "https://Quarter-Lib-Old:${PAT}@pkgs.dev.azure.com/viertel/Quarter-Lib-Old/_packaging/Quarter-Lib-Old/pypi/simple/"
 RUN pdm install --check --prod --no-editable
 
 # run stage
