@@ -29,4 +29,4 @@ COPY src /project/src
 RUN mv /project/src/main.py /project/main.py
 
 
-CMD ["python", "/project/src/main.py"]
+CMD ["python", "/project/main.py"]
