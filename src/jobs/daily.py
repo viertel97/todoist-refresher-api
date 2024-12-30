@@ -5,9 +5,9 @@ from typing import Annotated
 from fastapi import APIRouter, Path
 from quarter_lib.logging import setup_logging
 
-from services.sqlite_service import get_koreader_book, get_koreader_page_stat
-from services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
-from services.tts_service import transcribe
+from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
+from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
+from src.services.tts_service import transcribe
 from src.helper.config_helper import get_value
 from src.helper.database_helper import create_server_connection
 from src.helper.path_helper import slugify
