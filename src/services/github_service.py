@@ -9,8 +9,8 @@ from github import Github, InputGitTreeElement
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 
-from helper.path_helper import slugify
-from services.telegram_service import send_to_telegram
+from src.helper.path_helper import slugify
+from src.services.telegram_service import send_to_telegram
 
 logger = setup_logging(__file__)
 
@@ -36,8 +36,7 @@ def get_previous_description(previous_desc):
 		temp_json = json.loads(temp_desc)
 		# remove two first characters from desc
 		return {k: v for k, v in temp_json.items() if v}, desc[2][1:]
-	else:
-		return None, previous_desc
+	return None, previous_desc
 
 
 def generate_metadata(
@@ -129,7 +128,9 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 
 	# check if the file already exists
 	file_name = slugify(sql_entry["filename"]) + ".md"
-	file_path = f"0300_Spaces/Social Circle/Activities/{str(sql_entry['happened_at'].year)}/{str(sql_entry['happened_at'].strftime('%m-%B'))}/{file_name}"
+	file_path = (
+		f"0300_Spaces/Social Circle/Activities/{sql_entry['happened_at'].year!s}/{sql_entry['happened_at'].strftime('%m-%B')!s}/{file_name}"
+	)
 
 	if file_path in get_files("0300_Spaces/Social Circle/Activities"):
 		logger.info(f"File {file_name} already exists in github")

@@ -1,18 +1,18 @@
 from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
 
-from helper.config_helper import get_value
-from services.github_service import add_to_work_inbox
-from services.monica_database_service import (
+from src.helper.config_helper import get_value
+from src.services.github_service import add_to_work_inbox
+from src.services.monica_database_service import (
 	add_to_be_deleted_activities_to_obsidian,
 	get_inbox_activities_to_clean,
 )
-from services.notion_service import (
+from src.services.notion_service import (
 	DATABASES,
 	add_task_to_notion_database,
 )
-from services.obsidian_service import add_to_obsidian_microjournal
-from services.todoist_service import (
+from src.services.obsidian_service import add_to_obsidian_microjournal
+from src.services.todoist_service import (
 	complete_task,
 	get_items_by_todoist_label,
 	move_item_to_microjournal_done,
@@ -55,7 +55,7 @@ RETHINK_PROJECT_ID = "2296630360"
 def todoist_to_tpt_routine():
 	logger.info("start - hourly todoist to tpt routine")
 	list_to_move = get_items_by_todoist_label(TO_TPT_LABEL_ID)
-	logger.info("number of items to move from Todoist to Notion - TPT: {length}".format(length=str(len(list_to_move))))
+	logger.info(f"number of items to move from Todoist to Notion - TPT: {len(list_to_move)!s}")
 	tech_database = get_value("tech", "name", DATABASES)["id"]
 	for item_to_move in list_to_move:
 		add_task_to_notion_database(tech_database, item_to_move)
@@ -69,7 +69,7 @@ def todoist_to_tpt_routine():
 def todoist_to_microjournal_routine():
 	logger.info("start - hourly todoist to microjournal routine")
 	list_to_move = get_items_by_todoist_label(TO_MICROJOURNAL_LABEL_ID)
-	logger.info("number of items to move from Todoist to Microjournal: {length}".format(length=str(len(list_to_move))))
+	logger.info(f"number of items to move from Todoist to Microjournal: {len(list_to_move)!s}")
 	if len(list_to_move) > 0:
 		# add_to_monica_microjournal(list_to_move)
 		add_to_obsidian_microjournal(list_to_move)
@@ -85,7 +85,7 @@ def todoist_to_microjournal_routine():
 def todoist_to_work_routine():
 	logger.info("start - hourly todoist to work-inbox routine")
 	list_to_move = get_items_by_todoist_label(TO_WORK_LABEL_ID)
-	logger.info("number of items to move from Todoist to Work: {length}".format(length=str(len(list_to_move))))
+	logger.info(f"number of items to move from Todoist to Work: {len(list_to_move)!s}")
 	if len(list_to_move) > 0:
 		add_to_work_inbox(list_to_move)
 		for item_to_move in list_to_move:
@@ -99,7 +99,7 @@ def todoist_to_work_routine():
 def todoist_to_mm_routine():
 	logger.info("start - hourly todoist to mm routine")
 	list_to_move = get_items_by_todoist_label(TO_MM_LABEL_ID)
-	logger.info("number of items to move from Todoist to Notion - MM: {length}".format(length=str(len(list_to_move))))
+	logger.info(f"number of items to move from Todoist to Notion - MM: {len(list_to_move)!s}")
 	mm_database = get_value("mindfull_mastery", "name", DATABASES)["id"]
 	for item_to_move in list_to_move:
 		add_task_to_notion_database(mm_database, item_to_move)
@@ -113,7 +113,7 @@ def todoist_to_mm_routine():
 async def clean_inbox_activities_routine():
 	logger.info("start - hourly clean inbox activities")
 	deletion_list = get_inbox_activities_to_clean()
-	logger.info("number of items to add to obsidian: {length}".format(length=str(len(deletion_list))))
+	logger.info(f"number of items to add to obsidian: {len(deletion_list)!s}")
 	logger.info("start - add to-be deleted activities to obsidian")
 	if len(deletion_list) > 0:
 		deleted_list = await add_to_be_deleted_activities_to_obsidian(deletion_list)

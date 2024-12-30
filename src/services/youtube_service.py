@@ -2,7 +2,7 @@ import random
 
 import pytube
 
-from services.todoist_service import THIS_WEEK_PROJECT_ID, TODOIST_API
+from src.services.todoist_service import THIS_WEEK_PROJECT_ID, TODOIST_API
 
 TO_TRANSCRIBE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLC9ZZKXI-p0DmAey733oUFb9D0S7WeLN3"
 TO_ANNOTATE_PLAYLIST_URL = "https://www.youtube.com/playlist?list=PLC9ZZKXI-p0ArOZggeHvKV8fATjEbxhhb"
@@ -14,9 +14,7 @@ def add_video_annotate_task():
 		item = random.choice(playlist.video_urls)
 		yt = pytube.YouTube(item)
 		TODOIST_API.add_task(
-			content='Annotate "[{title}]({url})" in Zotero + Remove from [Playlist]({playlist_url})'.format(
-				title=yt.title, url=yt.watch_url, playlist_url=TO_ANNOTATE_PLAYLIST_URL
-			),
+			content=f'Annotate "[{yt.title}]({yt.watch_url})" in Zotero + Remove from [Playlist]({TO_ANNOTATE_PLAYLIST_URL})',
 			project_id=THIS_WEEK_PROJECT_ID,
 		)
 		return True
@@ -29,11 +27,7 @@ def add_video_transcribe_tasks():
 		for item in playlist.video_urls:
 			yt = pytube.YouTube(item)
 			TODOIST_API.add_task(
-				content='Transcribe "[{title}]({url})" and add to Zotero + Remove from [Playlist]({playlist_url})'.format(
-					title=yt.title,
-					url=yt.watch_url,
-					playlist_url=TO_TRANSCRIBE_PLAYLIST_URL,
-				),
+				content=f'Transcribe "[{yt.title}]({yt.watch_url})" and add to Zotero + Remove from [Playlist]({TO_TRANSCRIBE_PLAYLIST_URL})',
 				project_id=THIS_WEEK_PROJECT_ID,
 				labels=["Digital"],
 			)

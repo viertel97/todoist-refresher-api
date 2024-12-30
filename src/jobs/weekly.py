@@ -3,14 +3,14 @@ import datetime
 from fastapi import APIRouter
 from quarter_lib.logging import setup_logging
 
-from helper.config_helper import get_value
-from services.ght_service import update_ght
-from services.notion_service import (
+from src.helper.config_helper import get_value
+from src.services.ght_service import update_ght
+from src.services.notion_service import (
 	DATABASES,
 	get_random_from_notion_articles,
 	get_random_from_notion_database,
 )
-from services.todoist_service import (
+from src.services.todoist_service import (
 	PROJECT_DICT,
 	check_due,
 	check_next_week,
@@ -18,7 +18,7 @@ from services.todoist_service import (
 	get_dates,
 	move_items,
 )
-from services.youtube_service import add_video_annotate_task, add_video_transcribe_tasks
+from src.services.youtube_service import add_video_annotate_task, add_video_transcribe_tasks
 
 logger = setup_logging(__file__)
 

@@ -6,12 +6,12 @@ import pandas as pd
 import pymysql.cursors
 from loguru import logger
 
-from config.queries import activity_query
-from helper.database_helper import close_server_connection, create_server_connection
-from helper.date_helper import get_date_or_datetime
-from services.github_service import create_obsidian_markdown_in_git
-from services.notion_service import get_drugs_from_activity
-from services.todoist_service import get_default_offset
+from src.config.queries import activity_query
+from src.helper.database_helper import close_server_connection, create_server_connection
+from src.helper.date_helper import get_date_or_datetime
+from src.services.github_service import create_obsidian_markdown_in_git
+from src.services.notion_service import get_drugs_from_activity
+from src.services.todoist_service import get_default_offset
 
 DEFAULT_ACCOUNT_ID = 1
 INBOX_CONTACT_ID = 52
@@ -83,9 +83,9 @@ def add_monica_activities(appointment_list):
 					activity_contact_values,
 				)
 				connection.commit()
-				logger.info("Activity with id {activity_id} was added".format(activity_id=last_row_id))
+				logger.info(f"Activity with id {last_row_id} was added")
 		except pymysql.err.IntegrityError as e:
-			logger.error("IntegrityError: {error}".format(error=e))
+			logger.error(f"IntegrityError: {e}")
 			continue
 	close_server_connection(connection)
 
@@ -103,13 +103,13 @@ def get_inbox_activities_to_clean():
 			(INBOX_CONTACT_ID, BLOCKER_CONTACT_ID),
 		)
 		for row in cursor:
-			if row["activity_id"] not in temp_dict.keys():
+			if row["activity_id"] not in temp_dict:
 				temp_dict[row["activity_id"]] = []
 			temp_dict[row["activity_id"]].append(row["contact_id"])
 	close_server_connection(connection)
-	logger.info("Found {len} potential deletions.".format(len=len(temp_dict)))
+	logger.info(f"Found {len(temp_dict)} potential deletions.")
 	to_delete_list = []
-	for temp_key in temp_dict.keys():
+	for temp_key in temp_dict:
 		if NO_GITHUB_CONTACT_ID in temp_dict[temp_key]:
 			temp_dict[temp_key].remove(NO_GITHUB_CONTACT_ID)
 		if len(temp_dict[temp_key]) > 1:
@@ -118,7 +118,7 @@ def get_inbox_activities_to_clean():
 
 
 def delete_inbox_activity(connection, activity_id):
-	logger.info("Deleting activity with id: {activity_id}".format(activity_id=activity_id))
+	logger.info(f"Deleting activity with id: {activity_id}")
 	with connection.cursor() as cursor:
 		try:
 			cursor.execute(
@@ -131,8 +131,8 @@ def delete_inbox_activity(connection, activity_id):
 			)
 			connection.commit()
 		except pymysql.err.IntegrityError as e:
-			logger.error("IntegrityError: {error}".format(error=e))
-	logger.info("Activity with id {activity_id} was deleted".format(activity_id=activity_id))
+			logger.error(f"IntegrityError: {e}")
+	logger.info(f"Activity with id {activity_id} was deleted")
 
 
 async def add_to_be_deleted_activities_to_obsidian(deletion_list):
@@ -152,9 +152,9 @@ async def add_to_be_deleted_activities_to_obsidian(deletion_list):
 					delete_inbox_activity(connection, activity_id)
 					deleted_list.append(row)
 			except pymysql.err.IntegrityError as e:
-				logger.error("IntegrityError: {error}".format(error=e))
+				logger.error(f"IntegrityError: {e}")
 				continue
-			logger.info("Activity with id {activity_id} was added to obsidian".format(activity_id=activity_id))
+			logger.info(f"Activity with id {activity_id} was added to obsidian")
 	close_server_connection(connection)
 	return deleted_list
 
@@ -199,7 +199,7 @@ def add_to_monica_microjournal(microjournal_list):
 				)
 				connection.commit()
 		except pymysql.err.IntegrityError as e:
-			logger.error("IntegrityError: {error}".format(error=e))
+			logger.error(f"IntegrityError: {e}")
 			continue
 	close_server_connection(connection)
 
@@ -222,6 +222,6 @@ def update_archive():
 				)
 				connection.commit()
 			except pymysql.err.IntegrityError as e:
-				logger.error("IntegrityError: {error}".format(error=e))
+				logger.error(f"IntegrityError: {e}")
 				continue
 	close_server_connection(connection)

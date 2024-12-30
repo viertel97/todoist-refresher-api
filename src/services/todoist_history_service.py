@@ -1,24 +1,18 @@
-import os
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 import pytz
-from loguru import logger
+from quarter_lib.logging import setup_logging
 
-from helper.web_helper import get_habits_from_web
-from services.todoist_service import get_todoist_activity
+from src.helper.web_helper import get_habits_from_web
+from src.services.todoist_service import get_todoist_activity
+
+logger = setup_logging(__file__)
 
 HABITS_PROJECT_ID = str(2244708745)
 HABITS = get_habits_from_web()
 habit_list = [x["name"] for x in HABITS]
-
-logger.add(
-	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-	backtrace=True,
-	diagnose=True,
-)
 
 
 def df_standardization(df):

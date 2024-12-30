@@ -1,17 +1,10 @@
-import os
-
-from loguru import logger
+from quarter_lib.logging import setup_logging
 from quarter_lib_old.todoist import update_due
 
-from services.database_service import get_ght_results
-from services.todoist_service import TODOIST_API
+from src.services.database_service import get_ght_results
+from src.services.todoist_service import TODOIST_API
 
-logger.add(
-	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-	backtrace=True,
-	diagnose=True,
-)
+logger = setup_logging(__file__)
 
 
 def update_ght():
@@ -21,7 +14,7 @@ def update_ght():
 	total_text = ght.to_string(index=False, header=False) + "\n\n" + total_text
 	due = {"string": "Monday 10am"}
 	item = TODOIST_API.add_task(
-		content="{total}€ überweisen (KW {kw})".format(total=total, kw=kw),
+		content=f"{total}€ überweisen (KW {kw})",
 		description=total_text,
 		project_id="2244466904",
 		labels=["Digital"],

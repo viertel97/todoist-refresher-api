@@ -5,8 +5,8 @@ from datetime import datetime, timedelta
 from fastapi import APIRouter
 from loguru import logger
 
-from services.github_service import get_files, get_files_with_modification_date
-from services.todoist_service import (
+from src.services.github_service import get_files, get_files_with_modification_date
+from src.services.todoist_service import (
 	add_obsidian_task_for_activity,
 	add_obsidian_task_for_note,
 	check_if_last_item,
@@ -36,7 +36,7 @@ def obsidian_random_note():
 
 	file = random.choice(files)
 	add_obsidian_task_for_note(file, "Random file")
-	logger.info("selected random file '{}'".format(file))
+	logger.info(f"selected random file '{file}'")
 
 	logger.info("end bi-daily - obsidian - random note")
 
@@ -64,7 +64,7 @@ def obsidian_random_activity():
 
 	file = random.choice(files)
 	add_obsidian_task_for_activity(file, "Random activity file")
-	logger.info("selected random activity file '{}'".format(file))
+	logger.info(f"selected random activity file '{file}'")
 
 	logger.info("end bi-daily - obsidian - random activity")
 
@@ -89,7 +89,7 @@ def update_book_rework():
 				item["annotation"] = "".join(split_content[0 : len(split_content) - 2])
 				item["book"] = split_content[len(split_content) - 2]
 			else:
-				logger.error("item with content '{}' has no book".format(content))
+				logger.error(f"item with content '{content}' has no book")
 		else:
 			item["annotation"] = split_content[0]
 			item["book"] = split_content[1]

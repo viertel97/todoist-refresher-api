@@ -3,8 +3,10 @@ import os
 
 import msal
 import requests
-from loguru import logger
 from quarter_lib.akeyless import get_secrets
+from quarter_lib.logging import setup_logging
+
+logger = setup_logging(__file__)
 
 base_url = "https://graph.microsoft.com/v1.0/"
 endpoint = base_url + "me"
@@ -16,13 +18,6 @@ SCOPES = ["User.Read", "Files.Read.All"]
 CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN = get_secrets(["microsoft/client_id", "microsoft/client_secret", "microsoft/refresh_token"])
 
 client_instance = msal.ConfidentialClientApplication(client_id=CLIENT_ID, client_credential=CLIENT_SECRET, authority=AUTHORITY_URL)
-
-logger.add(
-	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-	backtrace=True,
-	diagnose=True,
-)
 
 
 def get_access_token():
@@ -98,9 +93,8 @@ def upload_file(local_file_path, access_token, destination_folder_id):
 	if response.status_code == 200 or response.status_code == 201:
 		logger.info("Successfully uploaded file " + file_name)
 		return response.json()
-	else:
-		logger.error(response.json())
-		raise Exception("Error uploading file")
+	logger.error(response.json())
+	raise Exception("Error uploading file")
 
 
 def create_folder(folder_name, access_token):
@@ -120,9 +114,8 @@ def create_folder(folder_name, access_token):
 	if response.status_code == 200 or response.status_code == 201:
 		logger.info("Successfully created new folder " + folder_name)
 		return response.json()
-	else:
-		logger.error(response.json())
-		raise Exception("Error creating new folder")
+	logger.error(response.json())
+	raise Exception("Error creating new folder")
 
 
 def upload_transcribed_article_to_onedrive(local_file_path, folder_name):

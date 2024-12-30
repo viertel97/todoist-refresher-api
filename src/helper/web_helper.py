@@ -2,7 +2,7 @@ import requests
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 
-from helper.caching import ttl_cache
+from src.helper.caching import ttl_cache
 
 logger = setup_logging(__file__)
 

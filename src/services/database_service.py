@@ -1,20 +1,14 @@
-import os
 from datetime import datetime, timedelta
 
 import pandas as pd
-from loguru import logger
+from quarter_lib.logging import setup_logging
 
-from helper.database_helper import close_server_connection, create_server_connection
+from src.helper.database_helper import close_server_connection, create_server_connection
+
+logger = setup_logging(__file__)
 
 MAX_PER_WEEK = 15
 LENGTH_OF_WEEK = 7
-
-logger.add(
-	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-	backtrace=True,
-	diagnose=True,
-)
 
 
 def is_positive(row):
@@ -26,10 +20,8 @@ def is_positive(row):
 			notation_dict[temp[0]] = temp[1].strip()
 		if row["default_type"] == "boolean":
 			return notation_dict[row["value"]] == "positive"
-		else:
-			return row["value"] == row["default_type"] if notation_dict["cancel"] == "positive" else row["value"] != row["default_type"]
-	else:
-		return None
+		return row["value"] == row["default_type"] if notation_dict["cancel"] == "positive" else row["value"] != row["default_type"]
+	return None
 
 
 def get_timestamps(offset=0):
@@ -45,16 +37,14 @@ def get_ght_results(offset=-1):
 	connection = create_server_connection("private")
 	start_of_week, end_of_week, kw = get_timestamps(offset=offset)
 	ght = pd.read_sql(
-		"SELECT * FROM ght WHERE ts BETWEEN '{ts1}' AND '{ts2}'".format(ts1=start_of_week, ts2=end_of_week),
+		f"SELECT * FROM ght WHERE ts BETWEEN '{start_of_week}' AND '{end_of_week}'",
 		connection,
 	)
 	unique_timestamps = [pd.to_datetime(ts).replace(second=0) for ts in ght["created_at"]]
 	unique_timestamps = len(list(set(unique_timestamps)))
 	if len(ght) <= 0:
 		close_server_connection(connection)
-		raise Exception(
-			"No results found for week {kw}. Start of week: {ts1} /  end of week: {ts2}".format(kw=kw, ts1=start_of_week, ts2=end_of_week)
-		)
+		raise Exception(f"No results found for week {kw}. Start of week: {start_of_week} /  end of week: {end_of_week}")
 	ght_questions = pd.read_sql(
 		"SELECT * FROM ght_questions_daily WHERE notation IS NOT NULL AND multiplier > 0",
 		connection,

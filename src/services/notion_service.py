@@ -9,10 +9,10 @@ import requests
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 
-import services.todoist_history_service as todoist_history_service
-from helper.config_helper import get_config, get_value
-from helper.web_helper import get_notion_ids_from_web
-from services.todoist_service import (
+from src.helper.config_helper import get_config, get_value
+from src.helper.web_helper import get_notion_ids_from_web
+from src.services import todoist_history_service
+from src.services.todoist_service import (
 	DAILY_SECTION_ID,
 	THIS_WEEK_PROJECT_ID,
 	TODOIST_API,
@@ -196,8 +196,7 @@ def update_notion_page_checkbox(page_id, checkbox_name, checkbox_value):
 	if r.status_code == 200:
 		logger.info("Updated notion page " + page_id + " with checkbox " + checkbox_name)
 		return r.json()
-	else:
-		logger.error("Error updating notion page " + page_id + " with checkbox " + checkbox_name)
+	logger.error("Error updating notion page " + page_id + " with checkbox " + checkbox_name)
 
 
 def get_article_database():
@@ -289,11 +288,11 @@ def transform_content(content):
 	notion_habit_list = []
 
 	for habit in content.values:
-		if "Pomodoro" == habit:
+		if habit == "Pomodoro":
 			notion_habit_list.append("Pomodoro")
-		elif "Vitaminkonzentrat trinken + Omega 3 / Zink  nehmen" == habit:
+		elif habit == "Vitaminkonzentrat trinken + Omega 3 / Zink  nehmen":
 			notion_habit_list.append("Supplements")
-		elif "Tasse Tee trinken" == habit:
+		elif habit == "Tasse Tee trinken":
 			notion_habit_list.append("Tee")
 	return list(dict.fromkeys(notion_habit_list))
 

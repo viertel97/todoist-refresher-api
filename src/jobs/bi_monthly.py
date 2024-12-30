@@ -4,12 +4,12 @@ from datetime import datetime
 from fastapi import APIRouter
 from loguru import logger
 
-from helper import config_helper
-from services.notion_service import (
+from src.helper import config_helper
+from src.services.notion_service import (
 	DATABASES,
 	get_random_from_notion_link_list,
 )
-from services.todoist_service import get_data
+from src.services.todoist_service import get_data
 
 router = APIRouter(prefix="/bi_monthly", tags=["bi_monthly"])
 

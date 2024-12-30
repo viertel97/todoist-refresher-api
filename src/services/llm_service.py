@@ -33,7 +33,7 @@ def get_summary(item_list):
 			result = chain.invoke({"notes": item_list})["notes"]
 			if len(result) != len(item_list):
 				raise Exception("Result length does not match input length")
-			logger.info(f"Got result from langchain: {str(result)}")
+			logger.info(f"Got result from langchain: {result!s}")
 			return result
 		except Exception:
 			logger.exception("Error in get_summary")

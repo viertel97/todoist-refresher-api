@@ -13,8 +13,8 @@ from quarter_lib_old.google import (
 )
 from quarter_lib_old.todoist import move_item_to_project, update_due
 
-from helper.date_helper import get_date_or_datetime
-from services.monica_database_service import (
+from src.helper.date_helper import get_date_or_datetime
+from src.services.monica_database_service import (
 	get_activities_db,
 	get_activity_contact,
 	get_contacts,
@@ -187,7 +187,7 @@ def add_tasks(api, appointment_list, activities):
 				today = datetime.today()
 				appointment["happened_at"] = today.strftime("%Y-%m-%d")
 				appointment["summary"] = (
-					appointment["summary"] + f" (Tag {str(is_multiday)} - {appointment['happened_at']} - {today.strftime('%A')})"
+					appointment["summary"] + f" (Tag {is_multiday!s} - {appointment['happened_at']} - {today.strftime('%A')})"
 				)
 			content = "'" + appointment["summary"] + "'" + " - nacharbeiten & Tracker pflegen"
 			logger.info("content: " + str(content))
@@ -235,8 +235,7 @@ def get_from_api(object_type):
 			objects.append(object_entry)
 		if len(r.json()["data"]) != 100:
 			break
-		else:
-			page += 1
+		page += 1
 	logger.info("found " + str(len(objects)) + " monica events")
 	return objects
 

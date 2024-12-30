@@ -9,17 +9,17 @@ from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.responses import JSONResponse
 from quarter_lib.logging import setup_logging
 
-from config.api_documentation import description, tags_metadata, title
-from helper.google_helper import test_service
-from helper.network_helper import log_request_info
-from jobs import (
+from src.config.api_documentation import description, tags_metadata, title
+from src.helper.google_helper import test_service
+from src.helper.network_helper import log_request_info
+from src.jobs import (
 	bi_monthly,
 	bi_weekly,
 	daily,
 	hourly,
 	weekly,
 )
-from services.telegram_service import send_to_telegram
+from src.services.telegram_service import send_to_telegram
 
 controllers = [bi_weekly, bi_monthly, daily, hourly, weekly]
 
@@ -27,7 +27,7 @@ logger = setup_logging(__name__)
 
 DEBUG = platform == "darwin" or platform == "win32" or platform == "Windows"
 IS_CONTAINER = os.environ.get("IS_CONTAINER", "False") == "True"
-logger.info("Variables:\nDEBUG: {}\nIS_CONTAINER: {}\nplatform: {}".format(DEBUG, IS_CONTAINER, platform))
+logger.info(f"Variables:\nDEBUG: {DEBUG}\nIS_CONTAINER: {IS_CONTAINER}\nplatform: {platform}")
 app = FastAPI(openapi_tags=tags_metadata, title=title, description=description)
 
 # app = FastAPI(debug=DEBUG)

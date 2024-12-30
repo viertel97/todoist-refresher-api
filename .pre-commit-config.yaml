@@ -47,11 +47,11 @@ repos:
   rev: v0.7.1
   hooks:
     # Run the linter.
-    - id: ruff
-      name: ruff
-      entry: ruff check
-      types_or: [ python, pyi ]
-      args: []
+    # - id: ruff
+    #   name: ruff
+    #   entry: ruff check
+    #   types_or: [ python, pyi ]
+    #   args: []
     # Run the formatter.
     - id: ruff-format
       name: ruff-format

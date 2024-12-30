@@ -5,14 +5,17 @@ from typing import Annotated
 from fastapi import APIRouter, Path
 from quarter_lib.logging import setup_logging
 
-from helper.config_helper import get_value
-from helper.database_helper import create_server_connection
-from helper.path_helper import slugify
-from helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
-from services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
-from services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
-from services.monica_database_service import add_monica_activities, update_archive
-from services.monica_service import (
+from services.sqlite_service import get_koreader_book, get_koreader_page_stat
+from services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
+from services.tts_service import transcribe
+from src.helper.config_helper import get_value
+from src.helper.database_helper import create_server_connection
+from src.helper.path_helper import slugify
+from src.helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
+from src.services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
+from src.services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
+from src.services.monica_database_service import add_monica_activities, update_archive
+from src.services.monica_service import (
 	add_tasks,
 	get_activities,
 	get_call_events,
@@ -20,7 +23,7 @@ from services.monica_service import (
 	get_events_for_days,
 	was_at_day,
 )
-from services.notion_service import (
+from src.services.notion_service import (
 	DATABASES,
 	get_article_database,
 	get_page_for_date,
@@ -32,9 +35,6 @@ from services.notion_service import (
 	update_notion_habit_tracker,
 	update_notion_page_checkbox,
 )
-from services.sqlite_service import get_koreader_book, get_koreader_page_stat
-from services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
-from services.tts_service import transcribe
 
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
@@ -83,9 +83,9 @@ def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the
 	logger.info("start daily - monica (preparation for today + " + str(days_in_future) + " days)")
 	events = get_events()
 	events_at_selected_date, selected_date = was_at_day(events, days_in_future)
-	logger.info("number of appointments at date ({date}): {length}".format(date=selected_date, length=str(len(events_at_selected_date))))
+	logger.info(f"number of appointments at date ({selected_date}): {len(events_at_selected_date)!s}")
 	activities = get_activities(days_in_future)
-	logger.info("number of activities at sdate ({date}): {length}".format(date=selected_date, length=str(len(activities))))
+	logger.info(f"number of activities at sdate ({selected_date}): {len(activities)!s}")
 	list_of_calendar_events = [
 		event[1] for event in events_at_selected_date if event[1] is not None
 	]  # because to check if the event has an "before" task
