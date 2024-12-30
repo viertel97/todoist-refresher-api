@@ -26,5 +26,7 @@ RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
 RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY src /project/src
+RUN mv /project/src/main.py /project/main.py
+
 
 CMD ["python", "/project/src/main.py"]
