@@ -20,13 +20,12 @@ RUN apt-get update &&  apt-get install -y git
 
 COPY --from=builder /project/.venv/ /project/.venv
 ENV PATH="/project/.venv/bin:$PATH"
+ENV PYTHONPATH="/project"
 
 EXPOSE 9100
 RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
 RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY src /project/src
-RUN mv /project/src/main.py /project/main.py
 
-
-CMD ["python", "/project/main.py"]
+CMD ["python", "/project/src/main.py"]
