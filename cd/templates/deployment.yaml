@@ -40,9 +40,9 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           # mount secret to /ssh
           volumeMounts:
-          - name: ssh-keys-v
-            readOnly: true
-            mountPath: "/ssh"
+            - name: ssh-keys-v
+              readOnly: true
+              mountPath: "/ssh"
           env:
             - name: access_id
               valueFrom:
@@ -67,7 +67,7 @@ spec:
             httpGet:
               path: /
               port: {{ .Values.service.port }}
-            initialDelaySeconds: 60
+            initialDelaySeconds: 120
           readinessProbe:
             httpGet:
               path: /

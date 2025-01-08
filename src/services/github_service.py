@@ -111,6 +111,7 @@ def get_files_with_modification_date(path):
 
 def get_files(path):
 	repo = g.get_repo("viertel97/obsidian")
+	logger.info(f"Getting files in {path}")
 	contents = repo.get_contents(path)
 	content_list = []
 	while contents:
@@ -125,14 +126,12 @@ def get_files(path):
 
 async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_dict):
 	repo = g.get_repo("viertel97/obsidian")
-
-	# check if the file already exists
 	file_name = slugify(sql_entry["filename"]) + ".md"
 	file_path = (
 		f"0300_Spaces/Social Circle/Activities/{sql_entry['happened_at'].year!s}/{sql_entry['happened_at'].strftime('%m-%B')!s}/{file_name}"
 	)
-
-	if file_path in get_files("0300_Spaces/Social Circle/Activities"):
+	files_in_repo = get_files("0300_Spaces/Social Circle/Activities")
+	if file_path in files_in_repo:
 		logger.info(f"File {file_name} already exists in github")
 		await send_to_telegram(f"File {file_name} already exists in github")
 		return
