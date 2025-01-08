@@ -61,6 +61,7 @@ def todoist_to_tpt_routine():
 		add_task_to_notion_database(tech_database, item_to_move)
 		move_item_to_notion_done(item_to_move)
 		set_done_label(item_to_move, "TPT")
+		complete_task(item_to_move)
 	logger.info("end - hourly todoist to tpt routine")
 
 
