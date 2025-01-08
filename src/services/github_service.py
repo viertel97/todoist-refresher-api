@@ -121,6 +121,7 @@ def get_files(path):
 		else:
 			content_list.append(file_content.path)
 	content_list = [file for file in content_list if file.endswith(".md")]
+	logger.info(f"Found {len(content_list)} files in {path}")
 	return content_list
 
 
