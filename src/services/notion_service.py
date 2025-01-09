@@ -57,6 +57,7 @@ def get_database(database_id):
 	url = BASE_URL + "databases/" + database_id + "/query"
 	result_list = []
 	body = None
+	logger.info("get_database - database_id: " + database_id)
 	while True:
 		r = (
 			requests.post(url, headers=HEADERS).json()

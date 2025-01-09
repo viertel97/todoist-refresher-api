@@ -10,6 +10,7 @@ from src.helper.config_helper import get_value
 from src.helper.database_helper import create_server_connection
 from src.helper.path_helper import slugify
 from src.helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
+from src.services.cubox_service import add_cubox_annotations_to_obsidian, add_cubox_reading_task_to_todoist
 from src.services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
 from src.services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from src.services.monica_database_service import add_monica_activities, update_archive
@@ -263,3 +264,19 @@ async def order_shopping_list_categories():
 	else:
 		logger.info("categories not changed")
 	logger.info("end daily - order shopping list categories")
+
+
+
+@logger.catch
+@router.post("/daily_cubox_to_obsidian_routine")
+async def daily_cubox_routine():
+	logger.info("start daily - cubox routine")
+	add_cubox_annotations_to_obsidian()
+	logger.info("end daily - cubox routine")
+
+@logger.catch
+@router.post("/daily_cubox_reading_routine")
+async def daily_cubox_reading_routine():
+	logger.info("start daily - cubox reading routine")
+	add_cubox_reading_task_to_todoist()
+	logger.info("end daily - cubox reading routine")
