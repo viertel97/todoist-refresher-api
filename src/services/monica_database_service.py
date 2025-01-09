@@ -134,13 +134,20 @@ def delete_inbox_activity(connection, activity_id):
 			logger.error(f"IntegrityError: {e}")
 	logger.info(f"Activity with id {activity_id} was deleted")
 
+import datetime
+import dateutil.relativedelta
 
 async def add_to_be_deleted_activities_to_obsidian(deletion_list):
 	deleted_list = []
 	drug_date_dict = {}
 	connection = create_server_connection("monica")
 	timestamp = datetime.now()
-	files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}")
+	# get files for the current month and the last month
+	files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
+	files_in_repo.extend(
+		get_files(
+			f"0300_Spaces/Social Circle/Activities/{(timestamp - dateutil.relativedelta.relativedelta(months=1)).year!s}/{(timestamp - dateutil.relativedelta.relativedelta(months=1)).strftime('%m-%B')!s}"
+	))
 	with connection.cursor() as cursor:
 		for activity_id in deletion_list:
 			try:
