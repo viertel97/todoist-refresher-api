@@ -1,13 +1,11 @@
 import copy
+import re
 from datetime import datetime, timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Path
 from quarter_lib.logging import setup_logging
 
-from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
-from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
-from src.services.tts_service import transcribe
 from src.helper.config_helper import get_value
 from src.helper.database_helper import create_server_connection
 from src.helper.path_helper import slugify
@@ -35,6 +33,9 @@ from src.services.notion_service import (
 	update_notion_habit_tracker,
 	update_notion_page_checkbox,
 )
+from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
+from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
+from src.services.tts_service import transcribe
 
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
@@ -189,6 +190,7 @@ filter_list = ["K"]
 filter_list_in = ["Drive from", "Buchungsschnitt"]
 filter_list_ends_with = ["'s birthday"]
 filter_list_starts_with = ["Namenstag", "Hochzeitstag"]
+filter_list_regex = [r"\w+\sHbf\s→\s\w+\sHbf"]
 
 
 def filter_event(summary):
@@ -196,7 +198,14 @@ def filter_event(summary):
 	filtered_filter_list_ends_with = any(summary.endswith(ext) for ext in filter_list_ends_with)
 	filtered_filter_list_in = any(ext in summary for ext in filter_list_in)
 	filtered_filter_list_starts_with = any(summary.startswith(ext) for ext in filter_list_starts_with)
-	return not (filtered_filter_list or filtered_filter_list_ends_with or filtered_filter_list_in or filtered_filter_list_starts_with)
+	filtered_filter_list_regex = any(re.search(ext, summary) for ext in filter_list_regex)
+	return not (
+		filtered_filter_list
+		or filtered_filter_list_ends_with
+		or filtered_filter_list_in
+		or filtered_filter_list_starts_with
+		or filtered_filter_list_regex
+	)
 
 
 def update_koreader_statistics():
