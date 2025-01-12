@@ -24,10 +24,10 @@ GROUP_COLUMNS = [
 	'title'
 ]
 
-def get_collections_data() -> pd.DataFrame:
+def get_collections_data(done_reading=True, synced_to_obsidian=False) -> pd.DataFrame:
 	df_collections = get_database(COLLECTIONS_ID)
-	df_collections = df_collections[df_collections["properties~Done~formula~boolean"] == True]
-	df_collections = df_collections[df_collections["properties~SyncedToObsidian~checkbox"] == False]
+	df_collections = df_collections[df_collections["properties~Done~formula~boolean"] == done_reading]
+	df_collections = df_collections[df_collections["properties~SyncedToObsidian~checkbox"] == synced_to_obsidian]
 	df_collections["title"] = df_collections["properties~Title~title"].apply(lambda x: x[0]["plain_text"])
 	df_collections = df_collections[['id', 'properties~Created~date~start',
 									 'properties~Description~rich_text', 'properties~Done~formula~boolean',
@@ -69,7 +69,7 @@ def get_annotations_data() -> pd.DataFrame:
 	return df_annotations
 
 def get_cubox_data():
-	df_collections = get_collections_data()
+	df_collections = get_collections_data(done_reading=True,synced_to_obsidian=False)
 	df_annotations = get_annotations_data()
 
 	df_merge = df_annotations.merge(df_collections, left_on="source", right_on="title",
@@ -103,9 +103,10 @@ def add_cubox_annotations_to_obsidian() -> None:
 		# TODO: Obsidian Integration
 
 def add_cubox_reading_task_to_todoist():
-	df_collections = get_collections_data()[:10]
+	df_collections = get_collections_data(done_reading=False,synced_to_obsidian=False)
+	df_collections.sort_values("created_time", ascending=False, inplace=True)
 
-	df_collections = df_collections.sample(1)
+	df_collections = df_collections[:10].sample(1)
 	for _, row in df_collections.iterrows():
 		logger.info(f"Adding reading task for {row['title']}")
 		result = add_todoist_task(f"[{row['title']}]({row['cubox_deep_link']})", labels=["Digital"], project_id=THIS_WEEK_PROJECT_ID, due={"string": "today"})
