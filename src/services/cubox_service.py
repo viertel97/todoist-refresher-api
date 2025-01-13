@@ -2,6 +2,7 @@ import pandas as pd
 from quarter_lib.logging import setup_logging
 import json
 from dateutil import parser
+import re
 
 from src.services.notion_service import get_database, update_notion_page_checkbox, NOTION_IDS
 from src.services.todoist_service import add_todoist_task, THIS_WEEK_PROJECT_ID
@@ -102,12 +103,23 @@ def add_cubox_annotations_to_obsidian() -> None:
 		# update_notion_page_checkbox(id, "SyncedToObsidian", True)
 		# TODO: Obsidian Integration
 
+CARD_ID_REGEX = r'id=(\d+)'
+
+def get_mobile_deep_link(cubox_deep_link: str) -> str:
+	card_id = re.search(CARD_ID_REGEX, cubox_deep_link).group(1)
+	if card_id:
+		return f"cubox://card?id={card_id}"
+	return ""
+
+
 def add_cubox_reading_task_to_todoist():
 	df_collections = get_collections_data(done_reading=False,synced_to_obsidian=False)
-	df_collections.sort_values("created_time", ascending=False, inplace=True)
+	df_collections.sort_values("created", ascending=False, inplace=True)
+	# generate url scheme for cubox deep link
+	df_collections["cubox_deep_link_mobile"] = df_collections["cubox_deep_link"].apply(lambda x: get_mobile_deep_link(x))
 
 	df_collections = df_collections[:10].sample(1)
 	for _, row in df_collections.iterrows():
 		logger.info(f"Adding reading task for {row['title']}")
-		result = add_todoist_task(f"[{row['title']}]({row['cubox_deep_link']})", labels=["Digital"], project_id=THIS_WEEK_PROJECT_ID, due={"string": "today"})
+		result = add_todoist_task(f"[{row['title']}]({row['cubox_deep_link_mobile']}) - [Link]({row['cubox_deep_link']})", labels=["Digital"], project_id=THIS_WEEK_PROJECT_ID, due_string="Today", due_lang="en")
 		logger.info(f"Task added: {result!s}")
