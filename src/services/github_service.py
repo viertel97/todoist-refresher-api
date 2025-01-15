@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 import git
+import yaml
 from github import Github, InputGitTreeElement
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
@@ -66,7 +67,7 @@ def generate_metadata(
 		metadata_json.update(additional_metadata)
 
 	return_string = "---\n"
-	return_string += json.dumps(metadata_json, indent=4, sort_keys=True, ensure_ascii=False)
+	return_string += yaml.dump(metadata_json, allow_unicode=False, default_flow_style=False)
 	return_string += "\n---\n\n"
 	return_string += "# People\n"
 	for person in people:
