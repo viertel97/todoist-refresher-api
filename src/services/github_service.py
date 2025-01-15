@@ -56,7 +56,7 @@ def generate_metadata(
 		"happened_at": happened_at.strftime("%Y-%m-%d"),
 		"updated_at": updated_at.strftime("%d-%m-%Y %H:%M:%S"),
 		"uuid": uuid,
-		"people": people,
+		"people": [f"[[{person}]]" for person in people],
 		"emotions": emotions,
 		"drugs": drugs,
 	}
