@@ -67,7 +67,9 @@ spec:
             httpGet:
               path: /
               port: {{ .Values.service.port }}
-            initialDelaySeconds: 120
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /

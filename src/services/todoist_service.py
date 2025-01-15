@@ -366,8 +366,8 @@ def update_obsidian_task(item):
 	return task
 
 
-def add_task(**kwargs):
-	TODOIST_API.add_task(kwargs)
+def add_todoist_task(* args, ** kwargs):
+	return TODOIST_API.add_task(* args, ** kwargs)
 
 
 def add_not_matched_task(not_found):

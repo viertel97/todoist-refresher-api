@@ -1,5 +1,7 @@
 import os
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
 from uuid import uuid4
 
 import pandas as pd
@@ -12,6 +14,8 @@ from src.helper.date_helper import get_date_or_datetime
 from src.services.github_service import create_obsidian_markdown_in_git, get_files
 from src.services.notion_service import get_drugs_from_activity
 from src.services.todoist_service import get_default_offset
+
+
 
 DEFAULT_ACCOUNT_ID = 1
 INBOX_CONTACT_ID = 52
@@ -140,7 +144,13 @@ async def add_to_be_deleted_activities_to_obsidian(deletion_list):
 	drug_date_dict = {}
 	connection = create_server_connection("monica")
 	timestamp = datetime.now()
-	files_in_repo = get_files("0300_Spaces/Social Circle/Activities")
+	# get files for the current month and the last month
+	files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
+	files_in_repo.extend(
+		get_files(
+			f"0300_Spaces/Social Circle/Activities/{(timestamp - relativedelta(months=1)).year!s}/{(timestamp - relativedelta(months=1)).strftime('%m-%B')!s}"
+		)
+	)
 	with connection.cursor() as cursor:
 		for activity_id in deletion_list:
 			try:
