@@ -70,8 +70,17 @@ def obsidian_random_activity():
 
 
 @logger.catch
-@router.post("/update_book_rework")
-def update_book_rework():
+@router.post("/update_book_rework_weighted")
+def update_book_rework_weighted():
+	update_book_rework(True)
+
+
+@router.post("/update_book_rework_unweighted")
+def update_book_rework_unweighted():
+	update_book_rework(False)
+
+
+def update_book_rework(weighted):
 	logger.info("start - daily update book rework")
 
 	rework_projects = get_rework_projects()
@@ -95,14 +104,20 @@ def update_book_rework():
 			item["book"] = split_content[1]
 
 	items = [item for item in items if "book" in item.keys()]
+	# order by orig_item.created
+	items = sorted(items, key=lambda x: x["orig_item"].created_at, reverse=True)
 
 	if len(items) > 0:
 		due_items = [item["orig_item"] for item in items if item["orig_item"].due is not None]
 		tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
-		if len(due_items) > 0:
+		if len(due_items) > 0 and not weighted:
 			update_task_due(due_items[0], tomorrow)
 		else:
-			selected_entry = random.choice(items)
+			if weighted:
+				weights = [i for i in range(len(items), 0, -1)]
+				selected_entry = random.choices(items, weights=weights, k=1)[0]
+			else:
+				selected_entry = random.choice(items)
 			update_task_due(selected_entry["orig_item"], tomorrow)
 			# items.remove(selected_entry)
 			check_if_last_item(selected_entry["book"], items)
