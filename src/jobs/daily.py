@@ -266,7 +266,6 @@ async def order_shopping_list_categories():
 	logger.info("end daily - order shopping list categories")
 
 
-
 @logger.catch
 @router.post("/daily_cubox_to_obsidian_routine")
 async def daily_cubox_routine():
@@ -274,9 +273,18 @@ async def daily_cubox_routine():
 	add_cubox_annotations_to_obsidian()
 	logger.info("end daily - cubox routine")
 
+
 @logger.catch
-@router.post("/daily_cubox_reading_routine")
-async def daily_cubox_reading_routine():
-	logger.info("start daily - cubox reading routine")
-	add_cubox_reading_task_to_todoist()
-	logger.info("end daily - cubox reading routine")
+@router.post("/daily_cubox_reading_routine_weighted")
+async def daily_cubox_reading_routine_weighted():
+	logger.info("start daily - cubox reading routine weighted")
+	add_cubox_reading_task_to_todoist(weighted=True)
+	logger.info("end daily - cubox reading routine weighted")
+
+
+@logger.catch
+@router.post("/daily_cubox_reading_routine_unweighted")
+async def daily_cubox_reading_routine_unweighted():
+	logger.info("start daily - cubox reading routine unweighted")
+	add_cubox_reading_task_to_todoist(weighted=False)
+	logger.info("end daily - cubox reading routine unweighted")

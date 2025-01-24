@@ -1,12 +1,13 @@
 import re
 
+import numpy as np
 import pandas as pd
 import yaml
 from dateutil import parser
 from quarter_lib.logging import setup_logging
 
-from src.services.notion_service import get_database, NOTION_IDS
-from src.services.todoist_service import add_todoist_task, THIS_WEEK_PROJECT_ID
+from src.services.notion_service import NOTION_IDS, get_database
+from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task
 
 logger = setup_logging(__file__)
 
@@ -143,13 +144,17 @@ def get_mobile_deep_link(cubox_deep_link: str) -> str:
 	return ""
 
 
-def add_cubox_reading_task_to_todoist():
+def add_cubox_reading_task_to_todoist(weighted=True) -> None:
 	df_collections = get_collections_data(done_reading=False, synced_to_obsidian=False)
 	df_collections.sort_values("created", ascending=False, inplace=True)
-	# generate url scheme for cubox deep link
 	df_collections["cubox_deep_link_mobile"] = df_collections["cubox_deep_link"].apply(lambda x: get_mobile_deep_link(x))
 
-	df_collections = df_collections[:10].sample(1)
+	if weighted:
+		weights = np.linspace(1, 0, len(df_collections))
+		weights /= weights.sum()
+		df_collections = df_collections.sample(1, weights=weights)
+	else:
+		df_collections = df_collections.sample(1)
 	for _, row in df_collections.iterrows():
 		logger.info(f"Adding reading task for {row['title']}")
 		result = add_todoist_task(
