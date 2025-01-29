@@ -1,5 +1,6 @@
 import pymysql
 from quarter_lib.akeyless import get_target
+from sqlalchemy import create_engine
 
 DB_USER_NAME, DB_HOST_NAME, DB_PASSWORD, DB_PORT, DB_NAME = get_target("private")
 (
@@ -11,7 +12,7 @@ DB_USER_NAME, DB_HOST_NAME, DB_PASSWORD, DB_PORT, DB_NAME = get_target("private"
 ) = get_target("monica")
 
 
-def create_server_connection(target):
+def create_server_connection(target, alchemy=False):
 	if target == "private":
 		db_user_name = DB_USER_NAME
 		db_host_name = DB_HOST_NAME
@@ -26,6 +27,9 @@ def create_server_connection(target):
 		db_name = DB_NAME_MONICA
 	else:
 		raise Exception("Unknown target")
+	if alchemy:
+		return create_engine(f"mysql+pymysql://{db_user_name}:{db_password}@{db_host_name}:{db_port}/{db_name}")
+
 	return pymysql.connect(
 		user=db_user_name,
 		host=db_host_name,
@@ -36,5 +40,8 @@ def create_server_connection(target):
 	)
 
 
-def close_server_connection(connection):
-	connection.close()
+def close_server_connection(connection, alchemy=False):
+	if alchemy:
+		connection.dispose()
+	else:
+		connection.close()

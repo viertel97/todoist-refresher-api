@@ -34,11 +34,12 @@ def get_timestamps(offset=0):
 
 
 def get_ght_results(offset=-1):
-	connection = create_server_connection("private")
+	connection = create_server_connection("private", alchemy=True)
 	start_of_week, end_of_week, kw = get_timestamps(offset=offset)
 	ght = pd.read_sql(
-		f"SELECT * FROM ght WHERE ts BETWEEN '{start_of_week}' AND '{end_of_week}'",
+		"SELECT * FROM ght WHERE ts >= %s AND ts <= %s",
 		connection,
+		params=(start_of_week, end_of_week),
 	)
 	unique_timestamps = [pd.to_datetime(ts).replace(second=0) for ts in ght["created_at"]]
 	unique_timestamps = len(list(set(unique_timestamps)))
@@ -72,7 +73,7 @@ def get_ght_results(offset=-1):
 	)
 	days_used = unique_timestamps / 7 if unique_timestamps < 7 else 1
 
-	close_server_connection(connection)
+	close_server_connection(connection, alchemy=True)
 	return (
 		ght[["text"]],
 		round((current_multiplier / sum_multiplier_per_week) * MAX_PER_WEEK * days_used, 2),
