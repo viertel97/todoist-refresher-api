@@ -9,7 +9,7 @@ from src.services.monica_database_service import (
 )
 from src.services.notion_service import (
 	DATABASES,
-	add_task_to_notion_database,
+	add_task_to_notion_database, WISHLIST_ID,
 )
 from src.services.obsidian_service import add_to_obsidian_microjournal
 from src.services.todoist_service import (
@@ -41,6 +41,7 @@ router = APIRouter(prefix="/hourly", tags=["hourly"])
 
 TO_TPT_LABEL_ID = "2160732004"
 TO_MM_LABEL_ID = "2170899508"
+TO_WISHLIST_LABEL_ID = "2178299680"
 
 TO_MICROJOURNAL_LABEL_ID = "2161901884"
 TO_WORK_LABEL_ID = "2168502713"
@@ -108,6 +109,16 @@ def todoist_to_mm_routine():
 		set_done_label(item_to_move, "MM")
 	logger.info("end - hourly todoist to mm routine")
 
+@logger.catch
+@router.post("/todoist_to_wishlist_routine")
+def todoist_to_wishlist_routine():
+	logger.info("start - hourly todoist to wishlist routine")
+	list_to_move = get_items_by_todoist_label(TO_WISHLIST_LABEL_ID)
+	logger.info(f"number of items to move from Todoist to Notion - Wishlist: {len(list_to_move)!s}")
+	for item_to_move in list_to_move:
+		add_task_to_notion_database(WISHLIST_ID, item_to_move, priority=-1)
+		complete_task(item_to_move)
+	logger.info("end - hourly todoist to wishlist routine")
 
 @logger.catch
 @router.post("/clean_inbox_activities_routine")

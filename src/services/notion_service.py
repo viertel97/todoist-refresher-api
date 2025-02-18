@@ -36,6 +36,7 @@ NOTION_IDS = get_notion_ids_from_web()
 
 ARTICLES_ID = NOTION_IDS["ARTICLES_ID"]
 TPT_ID = NOTION_IDS["TPT_ID"]
+WISHLIST_ID = NOTION_IDS["WISHLIST_ID"]
 
 
 DATABASES = get_config("databases_config.json")
@@ -405,7 +406,7 @@ def get_random_from_notion_link_list(database_id, df_projects=None, due={"string
 	update_notion_page(selected_row["id"])
 
 
-def add_task_to_notion_database(database_id, todoist_item):
+def add_task_to_notion_database(database_id, todoist_item, priority=None):
 	url = BASE_URL + "pages"
 	if todoist_item.description:
 		data = {
@@ -434,11 +435,11 @@ def add_task_to_notion_database(database_id, todoist_item):
 			"parent": {"database_id": database_id},
 			"properties": {
 				"Name": {"title": [{"text": {"content": todoist_item.content}}]},
-				"Priority": {"type": "number", "number": 0},
+				"Priority": {"type": "number", "number": 0 if priority is None else priority},
 			},
 		}
-	requests.post(url, data=json.dumps(data), headers=HEADERS).json()
-	# logger.info(r)
+	r = requests.post(url, data=json.dumps(data), headers=HEADERS).json()
+	logger.info(r)
 
 
 def get_drugs_from_activity(row, drug_date_dict):
