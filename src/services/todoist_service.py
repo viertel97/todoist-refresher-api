@@ -15,6 +15,7 @@ from quarter_lib_old.todoist import (
 	update_due,
 )
 from todoist_api_python.api import TodoistAPI
+from todoist_api_python.headers import create_headers
 
 logger = setup_logging(__file__)
 DEFAULT_OFFSET = timedelta(hours=2)
@@ -22,6 +23,7 @@ DEFAULT_OFFSET = timedelta(hours=2)
 TODOIST_TOKEN = get_secrets(["todoist/token"])
 
 TODOIST_API = TodoistAPI(TODOIST_TOKEN)
+HEADERS = create_headers(token=TODOIST_TOKEN)
 
 PROJECT_LIST = [
 	"THIS WEEK",
@@ -105,11 +107,11 @@ def check_due(task_id, due, project_id, week_list, df_projects, project_dict):
 			week_list[0] == due_date_week or week_list[0] - 1 == due_date_week
 		):  # second condition because tasks on sunday or day at execution
 			return check_and_add(project_id, task_id, 0, df_projects, project_dict)
-		elif week_list[1] == due_date_week:
+		if week_list[1] == due_date_week:
 			return check_and_add(project_id, task_id, 1, df_projects, project_dict)
-		elif week_list[2] <= due_date_week <= week_list[2] + 1:
+		if week_list[2] <= due_date_week <= week_list[2] + 1:
 			return check_and_add(project_id, task_id, 2, df_projects, project_dict)
-		elif week_list[3] <= due_date_week <= week_list[3] + 3:
+		if week_list[3] <= due_date_week <= week_list[3] + 3:
 			return check_and_add(project_id, task_id, 3, df_projects, project_dict)
 	check_and_add(project_id, task_id, 4, df_projects, project_dict)
 
@@ -129,11 +131,7 @@ def move_items(project_dict, df_projects):
 		for task_id in project_dict[project]:
 			project_to_move = df_projects[df_projects.name == project].iloc[0]
 			result = move_item_to_project(task_id=task_id, project_id=project_to_move["id"])
-			logger.info(
-				"trying to move task {task_id} to project {project} - result: {result}".format(
-					task_id=task_id, project=project, result=result
-				)
-			)
+			logger.info(f"trying to move task {task_id} to project {project} - result: {result}")
 
 
 def get_timestamps():
@@ -177,7 +175,7 @@ def generate_reminders(item, due):
 	due = {"string": new_date.strftime("%d.%m.%Y")}
 	item = TODOIST_API.add_task(
 		"Neuen Paper auf eBook Reader laden",
-		project_id=int(2244466904),
+		project_id=2244466904,
 		due_string=due,
 		labels=["Digital"],
 	)
@@ -275,15 +273,8 @@ time_to_order = 10
 
 def check_order_supplements(df):
 	used_this_year = df["properties~Supplements~checkbox"].value_counts().to_dict()[True]
-	for key in supplements.keys():
-		logger.info(
-			"if ({used_this_year}-{offset}) % ({default_size} - {time_to_order}) == 0".format(
-				used_this_year=used_this_year,
-				default_size=supplements[key][0],
-				time_to_order=time_to_order,
-				offset=supplements[key][1],
-			)
-		)
+	for key in supplements:
+		logger.info(f"if ({used_this_year}-{supplements[key][1]}) % ({supplements[key][0]} - {time_to_order}) == 0")
 
 		if (used_this_year - supplements[key][1]) % supplements[key][0] - time_to_order == 0:
 			TODOIST_API.add_task(
@@ -318,7 +309,7 @@ def update_task_due(item, due):
 
 
 def get_todoist_activity(**kwargs):
-	logger.info("Getting Todoist activity with kwargs: {}".format(kwargs))
+	logger.info(f"Getting Todoist activity with kwargs: {kwargs}")
 	activitiy = get_activity(**kwargs)
 	# logger.info("Got Todoist activity: {}".format(activitiy))
 	return activitiy
@@ -329,7 +320,7 @@ def check_if_last_item(book_title, items):
 		if item["book"] == book_title:
 			return
 	TODOIST_API.add_task(
-		"Buch-Notizen zusammenfassen - {book} - Obsidian-Eintrag überdenken".format(book=book_title),
+		f"Buch-Notizen zusammenfassen - {book_title} - Obsidian-Eintrag überdenken",
 		project_id="2300202317",
 		due_string="tomorrow",
 		labels=["Digital"],
@@ -337,7 +328,7 @@ def check_if_last_item(book_title, items):
 
 
 def add_obsidian_task_for_note(file_name, description=None):
-	content = "{file_name} §§§ Obsidian-Notiz überarbeiten".format(file_name=file_name)
+	content = f"{file_name} §§§ Obsidian-Notiz überarbeiten"
 	task = TODOIST_API.add_task(
 		content=content,
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
@@ -349,7 +340,7 @@ def add_obsidian_task_for_note(file_name, description=None):
 
 
 def add_obsidian_task_for_activity(file_name, description=None):
-	content = "{file_name} §§§ Obsidian-Activity überarbeiten".format(file_name=file_name)
+	content = f"{file_name} §§§ Obsidian-Activity überarbeiten"
 	task = TODOIST_API.add_task(
 		content=content,
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
@@ -361,13 +352,13 @@ def add_obsidian_task_for_activity(file_name, description=None):
 
 
 def update_obsidian_task(item):
-	new_content = "{content} §§§ Obsidian-Notiz überarbeiten".format(content=item.content)
+	new_content = f"{item.content} §§§ Obsidian-Notiz überarbeiten"
 	task = TODOIST_API.update_task(item.id, content=new_content, due_string="tomorrow")
 	return task
 
 
-def add_todoist_task(* args, ** kwargs):
-	return TODOIST_API.add_task(* args, ** kwargs)
+def add_todoist_task(*args, **kwargs):
+	return TODOIST_API.add_task(*args, **kwargs)
 
 
 def add_not_matched_task(not_found):

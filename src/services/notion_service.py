@@ -4,14 +4,13 @@ import urllib.parse
 from datetime import datetime, timedelta
 
 import pandas as pd
-import pytz
 import requests
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 
 from src.helper.config_helper import get_config, get_value
 from src.helper.web_helper import get_notion_ids_from_web
-from src.services import todoist_history_service
+from src.services.todoist_history_service import get_completed_tasks
 from src.services.todoist_service import (
 	DAILY_SECTION_ID,
 	THIS_WEEK_PROJECT_ID,
@@ -301,12 +300,7 @@ def transform_content(content):
 
 def check_habits(data_frame, checked_date):
 	logger.info("date: " + str(checked_date.date()))
-	local_tz = pytz.timezone("Europe/Berlin")
-	start_date = checked_date + timedelta(days=0, hours=6, minutes=0, seconds=0)
-	start_date = start_date.replace(tzinfo=None).astimezone(tz=local_tz)
-	end_date = (checked_date + timedelta(days=1, hours=6, minutes=0, seconds=0)).replace(tzinfo=None).astimezone(tz=local_tz)
-	df = data_frame.loc[(data_frame["event_date"] > start_date) & (data_frame["event_date"] < end_date)]
-	return transform_content(df.content)
+	return transform_content(data_frame["item_object_content"])
 
 
 def get_page_for_date(date, database_id=None):
@@ -347,9 +341,9 @@ def update_notion_habit_tracker_page(page_id, completed_habits):
 
 
 def update_notion_habit_tracker():
-	acitivites = todoist_history_service.fetch_days_new_new()
 	start_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
-	completed_habits = check_habits(acitivites, start_date)
+	activities = get_completed_tasks(start_date)
+	completed_habits = check_habits(activities, start_date)
 	habit_tracker_database = get_value("habit_tracker", "name", DATABASES)
 	page_id = get_page_for_date(
 		datetime.today() - timedelta(days=1),
