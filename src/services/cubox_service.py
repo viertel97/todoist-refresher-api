@@ -108,27 +108,12 @@ def get_annotations_data() -> pd.DataFrame:
 	return df_annotations
 
 
-def get_cubox_data():
-	# df_collections = get_collections_data(done_reading=True, synced_to_obsidian=False)
-	# df_collections.to_pickle("cubox_collections.pkl")
-	df_collections = pd.read_pickle("cubox_collections.pkl")
-	# df_annotations = get_annotations_data()
-	# df_annotations.to_pickle("cubox_annotations.pkl")
-	df_annotations = pd.read_pickle("cubox_annotations.pkl")
+def get_merged_cubox_data():
+	df_collections = get_collections_data(done_reading=True, synced_to_obsidian=False)
+	df_annotations = get_annotations_data()
 
 	df_merge = df_annotations.merge(df_collections, left_on="source", right_on="title", suffixes=("_annotation", "_collection"))
 	return df_merge
-
-	text = ""
-	for child in paragraph.contents:
-		if child.name != "a":
-			text += child.text
-		else:
-			text += "[{text}]({link})".format(text=child.text, link=child["href"])
-	text = f"{text} - {title} - {OBSIDIAN_AUTOSTART_TRIGGER}"
-	if comment:
-		return text, comment
-	return text
 
 
 def generate_content_from_annotations(annotations: pd.DataFrame, list_of_tasks: list) -> tuple[str, list]:
@@ -153,7 +138,7 @@ def generate_content_from_annotations(annotations: pd.DataFrame, list_of_tasks: 
 
 
 async def add_cubox_annotations_to_obsidian() -> None:
-	df_merge = get_cubox_data()
+	df_merge = get_merged_cubox_data()
 	list_of_files = []
 	list_of_tasks = []
 
