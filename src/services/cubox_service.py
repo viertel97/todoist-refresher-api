@@ -22,17 +22,16 @@ OBSIDIAN_AUTOSTART_TRIGGER = "Obsidian-Eintrag überdenken"
 COLLECTIONS_ID = NOTION_IDS["COLLECTIONS_ID"]
 ANNOTATIONS_ID = NOTION_IDS["ANNOTATIONS_ID"]
 
-GROUP_COLUMNS = [
+GROUP_COLUMNS = sorted([
 	"id_collection",
 	"created_collection",
 	"description",
-	"original_link",
 	"folder",
 	"type",
 	"cubox_deep_link_collection",
 	"updated_collection",
 	"title",
-]
+])
 
 
 def get_collections_data(done_reading=True, synced_to_obsidian=False) -> pd.DataFrame:
@@ -113,6 +112,8 @@ def get_merged_cubox_data():
 	df_annotations = get_annotations_data()
 
 	df_merge = df_annotations.merge(df_collections, left_on="source", right_on="title", suffixes=("_annotation", "_collection"))
+	# sort columns alphabetically
+	df_merge = df_merge.reindex(sorted(df_merge.columns), axis=1)
 	return df_merge
 
 
@@ -139,9 +140,7 @@ def generate_content_from_annotations(annotations: pd.DataFrame, list_of_tasks: 
 
 async def add_cubox_annotations_to_obsidian() -> None:
 	df_merge = get_merged_cubox_data()
-	list_of_files = []
-	list_of_tasks = []
-
+	list_of_files, list_of_tasks = [], []
 	for group_keys, annotations in df_merge.groupby(GROUP_COLUMNS):
 		group_dict = dict(zip(GROUP_COLUMNS, group_keys))
 		tags = set([f'"{item}"' for sublist in annotations["tags"].tolist() for item in sublist])
@@ -154,10 +153,11 @@ async def add_cubox_annotations_to_obsidian() -> None:
 			"type": group_dict["type"],
 			"tags": f"[{tags_string}]",  # Assuming `tags` is part of the grouped DataFrame
 			"folder": group_dict["folder"],
-			"original_link": group_dict["original_link"],
 			"cubox_deep_link": group_dict["cubox_deep_link_collection"],
 			"source": "Cubox",
 		}
+		if annotations.iloc[0]["original_link"]:
+			metadata_json["original_link"] = annotations.iloc[0]["original_link"]
 		metadata_json = {k: v.strip() if isinstance(v, str) else v for k, v in metadata_json.items()}
 
 		return_string = "---\n"
@@ -168,7 +168,8 @@ async def add_cubox_annotations_to_obsidian() -> None:
 		content, list_of_tasks = generate_content_from_annotations(annotations, list_of_tasks)
 		list_of_files.append({"filename": f"{slugify(group_dict['title'])}.md", "content": return_string})
 
-		update_notion_page_checkbox(group_dict["id_collection"], "SyncedToObsidian", True)
+		update_checkbox_result = update_notion_page_checkbox(group_dict["id_collection"], "SyncedToObsidian", True)
+		logger.info(update_checkbox_result)
 		logger.info(f"Updated Notion page {group_dict['id_collection']} for {group_dict['title']}")
 		time.sleep(5)
 
