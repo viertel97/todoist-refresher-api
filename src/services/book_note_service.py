@@ -15,47 +15,6 @@ OBSIDIAN_AUTOSTART_TRIGGER = "Obsidian-Eintrag überdenken"
 
 NUMBER_OF_ITEMS_PER_CHUNK = 40
 
-
-def get_tasks(soup, file_name):
-	for child in soup.find_all("h1"):
-		if child.text == "Annotations":
-			start_element = child
-	if not start_element:
-		return [], "No annotations found", file_name
-	lines = [child for child in start_element.next_siblings if child != "\n"]
-	tasks = []
-	for idx, child in enumerate(lines):
-		if not (idx + 1 < len(lines) and lines[idx + 1].name != "blockquote" and child.name == "blockquote"):
-			tasks.append(paragraph_to_task(child, title=file_name))
-		else:
-			tasks.append(
-				paragraph_to_task(
-					child.previous_sibling.previous_sibling,
-					comment=child.next_element.next_element.text,
-					title=file_name,
-				),
-			)
-	return (
-		tasks,
-		len(tasks),
-		len([task for task in tasks if type(task) == tuple]),
-		file_name,
-	)
-
-
-def paragraph_to_task(paragraph, title, comment=None):
-	text = ""
-	for child in paragraph.contents:
-		if child.name != "a":
-			text += child.text
-		else:
-			text += "[{text}]({link})".format(text=child.text, link=child["href"])
-	text = f"{text} - {title} - {OBSIDIAN_AUTOSTART_TRIGGER}"
-	if comment:
-		return text, comment
-	return text
-
-
 def get_smallest_project():
 	rework_projects = get_rework_projects()
 	project_sizes = [len(get_items_by_todoist_project(project.id)) for project in rework_projects]
