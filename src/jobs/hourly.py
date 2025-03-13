@@ -9,7 +9,8 @@ from src.services.monica_database_service import (
 )
 from src.services.notion_service import (
 	DATABASES,
-	add_task_to_notion_database, WISHLIST_ID,
+	add_task_to_notion_database,
+	WISHLIST_ID,
 )
 from src.services.obsidian_service import add_to_obsidian_microjournal
 from src.services.todoist_service import (
@@ -109,6 +110,7 @@ def todoist_to_mm_routine():
 		set_done_label(item_to_move, "MM")
 	logger.info("end - hourly todoist to mm routine")
 
+
 @logger.catch
 @router.post("/todoist_to_wishlist_routine")
 def todoist_to_wishlist_routine():
@@ -119,6 +121,7 @@ def todoist_to_wishlist_routine():
 		add_task_to_notion_database(WISHLIST_ID, item_to_move, priority=-1)
 		complete_task(item_to_move)
 	logger.info("end - hourly todoist to wishlist routine")
+
 
 @logger.catch
 @router.post("/clean_inbox_activities_routine")

@@ -16,7 +16,6 @@ from src.services.notion_service import get_drugs_from_activity
 from src.services.todoist_service import get_default_offset
 
 
-
 DEFAULT_ACCOUNT_ID = 1
 INBOX_CONTACT_ID = 52
 MICROJOURNAL_CONTACT_ID = 58

@@ -46,11 +46,11 @@ def get_ght_results(offset=-1):
 	if len(ght) <= 0:
 		close_server_connection(connection)
 		raise Exception(f"No results found for week {kw}. Start of week: {start_of_week} /  end of week: {end_of_week}")
-	ght_questions = pd.concat([
-		pd.read_sql(
-		"SELECT * FROM ght_questions_daily_evening WHERE notation IS NOT NULL AND multiplier > 0",connection),
-		pd.read_sql(
-			"SELECT * FROM ght_questions_daily_morning WHERE notation IS NOT NULL AND multiplier > 0", connection)]
+	ght_questions = pd.concat(
+		[
+			pd.read_sql("SELECT * FROM ght_questions_daily_evening WHERE notation IS NOT NULL AND multiplier > 0", connection),
+			pd.read_sql("SELECT * FROM ght_questions_daily_morning WHERE notation IS NOT NULL AND multiplier > 0", connection),
+		]
 	)
 	sum_multiplier_per_week = ght_questions[ght_questions["active"] == 1]["multiplier"].sum() * LENGTH_OF_WEEK
 	ght = ght.merge(ght_questions, on="code", how="left")
@@ -73,7 +73,7 @@ def get_ght_results(offset=-1):
 		),
 		axis=1,
 	)
-	days_used = unique_timestamps / (7*2) if unique_timestamps < (7*2) else 1
+	days_used = unique_timestamps / (7 * 2) if unique_timestamps < (7 * 2) else 1
 
 	close_server_connection(connection, alchemy=True)
 	return (
