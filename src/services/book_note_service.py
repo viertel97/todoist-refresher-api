@@ -1,6 +1,5 @@
 import time
 
-from bs4 import BeautifulSoup
 from quarter_lib.logging import setup_logging
 
 from src.services.telegram_service import send_to_telegram
