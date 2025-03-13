@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -13,6 +14,7 @@ from quarter_lib_old.todoist import (
 	move_item_to_project,
 	move_item_to_section,
 	update_due,
+	run_sync_commands,
 )
 from todoist_api_python.api import TodoistAPI
 from todoist_api_python.headers import create_headers
@@ -269,6 +271,14 @@ supplements = {
 	"Zinc Citrate Health Line - GN Laboratories": [120 * 2, 340],
 }
 time_to_order = 10
+
+
+def run_todoist_sync_commands(commands):
+	for command in commands:
+		command["uuid"] = str(uuid.uuid4())
+		if not command.get("temp_id"):
+			command["temp_id"] = str(uuid.uuid4())
+	return run_sync_commands(commands)
 
 
 def check_order_supplements(df):

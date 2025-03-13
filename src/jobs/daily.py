@@ -270,7 +270,7 @@ async def order_shopping_list_categories():
 @router.post("/daily_cubox_to_obsidian_routine")
 async def daily_cubox_routine():
 	logger.info("start daily - cubox routine")
-	add_cubox_annotations_to_obsidian()
+	await add_cubox_annotations_to_obsidian()
 	logger.info("end daily - cubox routine")
 
 
