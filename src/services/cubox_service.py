@@ -10,7 +10,7 @@ from quarter_lib.logging import setup_logging
 
 from src.helper.path_helper import slugify
 from src.services.book_note_service import add_rework_tasks
-from src.services.github_service import add_files_to_repository
+from src.services.github_service import add_files_to_repository, get_files
 from src.services.notion_service import NOTION_IDS, get_database, update_notion_page_checkbox
 from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task
 
@@ -173,10 +173,15 @@ async def add_cubox_annotations_to_obsidian() -> None:
 		logger.info(f"Updated Notion page {group_dict['id_collection']} for {group_dict['title']}")
 		time.sleep(5)
 
-	add_files_to_repository(list_of_files, f"obsidian-refresher: {datetime.now()}", "0200_Sources/Websites/")
-	logger.info("Files added to repository")
-	await add_rework_tasks(list_of_tasks)
-	logger.info("Tasks added to rework list")
+	# files_in_repo = get_files(f"0200_Sources/Websites")
+
+	if list_of_files:
+		add_files_to_repository(list_of_files, f"obsidian-refresher: {datetime.now()}", "0200_Sources/Websites/")
+		logger.info("Files added to repository")
+		await add_rework_tasks(list_of_tasks)
+		logger.info("Tasks added to rework list")
+	else:
+		logger.info("No files to add to repository")
 
 
 CARD_ID_REGEX = r"id=(\d+)"
