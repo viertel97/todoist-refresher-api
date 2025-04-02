@@ -31,31 +31,27 @@ WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 def get_previous_description(previous_desc):
 	desc = previous_desc.split("---")
 	if len(desc) > 1:
-		temp_desc = desc[1]
-		temp_desc = temp_desc.replace("\r", "").replace("\n", "").replace("\t", "").replace("  ", "")
-		temp_desc = temp_desc.replace(",}", "}")
-		temp_json = json.loads(temp_desc)
-		# remove two first characters from desc
-		return {k: v for k, v in temp_json.items() if v}, desc[2][1:]
+		desc_dict = yaml.load(desc[1], Loader=yaml.FullLoader)
+		return desc_dict, desc[2]
 	return None, previous_desc
 
 
 def generate_metadata(
-	summary,
+	summary: str,
 	people: list,
 	emotions: list,
-	happened_at,
-	created_at,
-	updated_at,
-	uuid,
-	original_description,
+	happened_at: datetime,
+	created_at: datetime,
+	updated_at: datetime,
+	uuid: str,
+	original_description: str,
 	drugs,
 ):
 	metadata_json = {
 		"summary": summary,
-		"created_at": created_at.strftime("%d-%m-%Y %H:%M:%S"),
+		"created_at": created_at.strftime("%Y-%m-%dT%H:%M:%S"),
 		"happened_at": happened_at.strftime("%Y-%m-%d"),
-		"updated_at": updated_at.strftime("%d-%m-%Y %H:%M:%S"),
+		"updated_at": updated_at.strftime("%Y-%m-%dT%H:%M:%S"),
 		"uuid": uuid,
 		"people": [f"[[{person}]]" for person in people],
 		"emotions": emotions,
@@ -69,10 +65,6 @@ def generate_metadata(
 	return_string = "---\n"
 	return_string += yaml.dump(metadata_json, allow_unicode=False, default_flow_style=False)
 	return_string += "\n---\n\n"
-	return_string += "# People\n"
-	for person in people:
-		return_string += f"- [[{person}]]\n"
-	return_string += "\n"
 
 	return return_string, cleaned_description
 

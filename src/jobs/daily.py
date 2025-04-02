@@ -57,7 +57,7 @@ def monica(check_for_next_day=False):
 	events = get_events_for_days()
 	events_today, _ = was_at_day(events, 0, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
-	events_today = [event for event in events_today if filter_event(event[0]["summary"])]
+	events_today = [event for event in events_today if filter_event(event['event']["summary"])]
 	if len(events_today) > 0:
 		# TODO: add matched schema so afterwards we can also add
 		#  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
@@ -66,17 +66,19 @@ def monica(check_for_next_day=False):
 
 	logger.info("end daily - monica (tomorrow)") if check_for_next_day else logger.info("end daily - monica (today)")
 
+	return events_today
+
 
 @logger.catch
 @router.post("/monica-morning")
 def monica_morning():
-	monica(check_for_next_day=False)
+	return monica(check_for_next_day=False)
 
 
 @logger.catch
 @router.post("/monica-evening")
 def monica_evening():
-	monica(check_for_next_day=True)
+	return monica(check_for_next_day=True)
 
 
 @logger.catch

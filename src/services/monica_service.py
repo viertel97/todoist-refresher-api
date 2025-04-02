@@ -12,6 +12,7 @@ from quarter_lib_old.google import (
 	get_events_from_calendar,
 )
 from quarter_lib_old.todoist import move_item_to_project, update_due
+from todoist_api_python.api import TodoistAPI
 
 from src.helper.date_helper import get_date_or_datetime
 from src.services.monica_database_service import (
@@ -145,9 +146,9 @@ def was_at_day(event_list, days, check_for_next_day=False):
 				if "description" in event.keys():
 					if "#ignore" not in event["description"]:
 						pre_list = get_pre_from_event(event)
-						events.append((event, pre_list))
+						events.append({"event": event, "pre_list": pre_list})
 				else:
-					events.append((event, None))
+					events.append({"event": event, "pre_list": []})
 	return events, selected_day
 
 
@@ -173,9 +174,10 @@ def is_multiday_event(appointment):
 	return False
 
 
-def add_tasks(api, appointment_list, activities):
-	if len(appointment_list) > 0:
-		for appointment, calendar_description in appointment_list:
+def add_tasks(api: TodoistAPI, activities, appointment_dict_list):
+	if len(appointment_dict_list) > 0:
+		for appointment_dict in appointment_dict_list:
+			appointment, calendar_description = appointment_dict["event"], appointment_dict["pre_list"]
 			logger.info("adding Todoist task: " + str(appointment))
 			appointment_time = get_date_or_datetime(appointment, "end")
 			if appointment_time.time() <= DAILY_LINKS_THRESHOLD:

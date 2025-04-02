@@ -1,5 +1,7 @@
 import os
 from datetime import datetime, timedelta
+
+import yaml
 from dateutil.relativedelta import relativedelta
 
 from uuid import uuid4
@@ -51,23 +53,50 @@ def get_contacts():
 	return df
 
 
-def add_monica_activities(appointment_list):
+def generate_content(appointment: dict, additional_description: list, start: datetime, end: datetime, created: datetime, updated: datetime):
+	content_dict = {
+		"summary": appointment["summary"],
+		"event-id": appointment["id"],
+		"start": start.strftime("%Y-%m-%dT%H:%M:%S") if start is not None else None,
+		"end": end.strftime("%Y-%m-%dT%H:%M:%S") if end is not None else None,
+		"location": appointment["location"] if "location" in appointment.keys() else None,
+		"event_created_at": created.strftime("%Y-%m-%dT%H:%M:%S") if created is not None else None,
+		"updated_at": updated.strftime("%Y-%m-%dT%H:%M:%S") if updated is not None else None,
+	}
+	content_dict = {k: v.strip() if isinstance(v, str) else v for k, v in content_dict.items()}
+
+	return_string = "---\n"
+	return_string += yaml.dump(content_dict, allow_unicode=True, default_flow_style=False)
+	return_string += "---\n\n"
+	if "description" in appointment.keys():
+		return_string += appointment["description"] + "\n\n"
+	if len(additional_description) > 0:
+		return_string += "\n".join(additional_description) + "\n\n"
+	return return_string
+
+def add_monica_activities(event_dict_list: list[dict]):
 	connection = create_server_connection("monica")
-	for appointment, additional_description in appointment_list:
+	for event_dict in event_dict_list:
+		event, additional_description = event_dict["event"], event_dict["pre_list"]
 		try:
+			timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			start = get_date_or_datetime(event, "start")
+			end = get_date_or_datetime(event, "end")
+			created = get_date_or_datetime(event, "created")
+			updated = get_date_or_datetime(event, "updated")
+			happened_at = (
+				event["happened_at"]
+				if "happened_at" in event.keys()
+				else start.strftime("%Y-%m-%d")
+			)
+			description = generate_content(event, additional_description, start, end, created, updated)
 			with connection.cursor() as cursor:
-				timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-				happened_at = (
-					appointment["happened_at"]
-					if "happened_at" in appointment.keys()
-					else get_date_or_datetime(appointment, "start").strftime("%Y-%m-%d")
-				)
 				activities_values = tuple(
 					(
 						uuid4(),
 						DEFAULT_ACCOUNT_ID,
-						appointment["summary"],
-						additional_description if additional_description is not None else "",
+						event["summary"],
+						description,
 						happened_at,
 						timestamp,
 						timestamp,
