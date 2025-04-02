@@ -44,7 +44,7 @@ def flatten_list_of_dicts(lst):
 	return flattened_list
 
 
-def get_completed_tasks(since: datetime):
+def get_completed_tasks(since: datetime) -> pd.DataFrame:
 	offset = 0
 	all_items = []
 
@@ -86,5 +86,6 @@ def get_completed_tasks(since: datetime):
 	]
 	# flatten
 	df = pd.DataFrame(all_items)
-	df["item_object_completed_at"] = pd.to_datetime(df["item_object_completed_at"])
+	if "item_object_completed_at" in df.columns:
+		df["item_object_completed_at"] = pd.to_datetime(df["item_object_completed_at"])
 	return df

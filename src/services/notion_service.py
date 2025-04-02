@@ -343,6 +343,9 @@ def update_notion_habit_tracker_page(page_id, completed_habits):
 def update_notion_habit_tracker():
 	start_date = datetime.today().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
 	activities = get_completed_tasks(start_date)
+	if activities.empty:
+		logger.info("No activities found")
+		return
 	completed_habits = check_habits(activities, start_date)
 	habit_tracker_database = get_value("habit_tracker", "name", DATABASES)
 	page_id = get_page_for_date(
