@@ -57,7 +57,7 @@ def monica(check_for_next_day=False):
 	events = get_events_for_days()
 	events_today, _ = was_at_day(events, 0, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
-	events_today = [event for event in events_today if filter_event(event['event']["summary"])]
+	events_today = [event for event in events_today if filter_event(event["summary"])]
 	if len(events_today) > 0:
 		# TODO: add matched schema so afterwards we can also add
 		#  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
@@ -79,25 +79,6 @@ def monica_morning():
 @router.post("/monica-evening")
 def monica_evening():
 	return monica(check_for_next_day=True)
-
-
-@logger.catch
-@router.post("/monica_before_tasks/{days_in_future}")
-def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the item to get")]):
-	logger.info("start daily - monica (preparation for today + " + str(days_in_future) + " days)")
-	events = get_events()
-	events_at_selected_date, selected_date = was_at_day(events, days_in_future)
-	logger.info(f"number of appointments at date ({selected_date}): {len(events_at_selected_date)!s}")
-	activities = get_activities(days_in_future)
-	logger.info(f"number of activities at sdate ({selected_date}): {len(activities)!s}")
-	list_of_calendar_events = [
-		event[1] for event in events_at_selected_date if event[1] is not None
-	]  # because to check if the event has an "before" task
-	# if len(activities) > 0:
-	#    activities = update_activities_without_date(activities)
-	if len(activities) > 0 and len(list_of_calendar_events) > 0:
-		add_before_tasks(activities, events_at_selected_date)
-	logger.info("end daily - monica (preparation for tomorrow)")
 
 
 @logger.catch
@@ -175,19 +156,6 @@ def links():
 	get_random_from_notion_link_list(link_list_database)
 
 	logger.info("end daily - links")
-
-
-def monica_calls():
-	logger.info("start daily - monica (calls)")
-
-	events = get_call_events()
-
-	events = [(event, event["description"]) for event in events]
-	logger.info("found " + str(len(events)) + " Google Calendar events for calls")
-	if len(events) > 0:
-		add_tasks(TODOIST_API, events, [])
-		add_monica_activities(events)
-
 
 filter_list = ["K"]
 filter_list_in = ["Drive from", "Buchungsschnitt"]
