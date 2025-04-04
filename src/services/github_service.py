@@ -29,6 +29,8 @@ WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 
 
 def get_previous_description(previous_desc):
+	if previous_desc is None:
+		return None, None
 	desc = previous_desc.split("---")
 	if len(desc) > 1:
 		desc_dict = yaml.load(desc[1], Loader=yaml.FullLoader)
@@ -46,7 +48,7 @@ def generate_metadata(
 	uuid: str,
 	original_description: str,
 	drugs,
-):
+) -> tuple[dict, str]:
 	metadata_json = {
 		"summary": summary,
 		"created_at": created_at.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -62,14 +64,10 @@ def generate_metadata(
 	if additional_metadata:
 		metadata_json.update(additional_metadata)
 
-	return_string = "---\n"
-	return_string += yaml.dump(metadata_json, allow_unicode=False, default_flow_style=False)
-	return_string += "\n---\n\n"
-
-	return return_string, cleaned_description
+	return metadata_json, cleaned_description
 
 
-def generate_file_content(summary, description):
+def generate_file_content(summary:str, description:str) -> str:
 	return_string = f"# {summary}\n\n"
 	if description:
 		return_string += f"{description}\n\n"
@@ -124,10 +122,6 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	file_path = (
 		f"0300_Spaces/Social Circle/Activities/{sql_entry['happened_at'].year!s}/{sql_entry['happened_at'].strftime('%m-%B')!s}/{file_name}"
 	)
-	if file_path in files_in_repo:
-		logger.info(f"File {file_name} already exists in github")
-		await send_to_telegram(f"File {file_name} already exists in github")
-		return
 
 	people = "" if sql_entry["people"] is None else sorted(sql_entry["people"].split("~"))
 	# remove "Inbox" from people if it exists
@@ -140,12 +134,9 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	updated_at = sql_entry["updated_at"]
 	uuid = sql_entry["uuid"]
 	description = sql_entry["description"]
-
 	drugs = drug_date_dict.get(happened_at, [])
 
-	logger.info(f"Changing filename from {sql_entry['filename']} to {file_name}")
-
-	metadata, cleaned_description = generate_metadata(
+	metadata_dict, cleaned_description = generate_metadata(
 		summary,
 		people,
 		emotions,
@@ -158,13 +149,43 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	)
 
 	file_content = generate_file_content(summary, cleaned_description)
-	logger.info(f"Creating {file_name} in github with content:\n{metadata + file_content}")
-	repo.create_file(
-		path=file_path,
-		message=f"obsidian-refresher: {run_timestamp}",
-		content=metadata + file_content,
-	)
-	logger.info(f"Created {file_name} in github")
+
+
+	if file_path in files_in_repo:
+		old_file = repo.get_contents(file_path)
+		old_file_content = old_file.decoded_content.decode("utf-8")
+		logger.info(f"File {file_name} already exists in github but with different content")
+		old_metadata, old_content = get_previous_description(old_file_content)
+		if old_metadata:
+			metadata_dict.update(old_metadata)
+
+		metadata_str = "---\n"
+		metadata_str += yaml.dump(metadata_dict, allow_unicode=False, default_flow_style=False)
+		metadata_str += "\n---\n\n"
+
+		repo.update_file(
+			path=file_path,
+			message=f"obsidian-refresher: {run_timestamp}",
+			content=metadata_str + old_content + file_content,
+			sha=old_file.sha,
+		)
+		logger.info(f"Updated {file_name} in github")
+		await send_to_telegram(f"{file_name} already exists - updating it with new content")
+	else:
+		metadata_str = "---\n"
+		metadata_str += yaml.dump(metadata_dict, allow_unicode=False, default_flow_style=False)
+		metadata_str += "\n---\n\n"
+
+		logger.info(f"Changing filename from {sql_entry['filename']} to {file_name}")
+
+		logger.info(f"Creating {file_name} in github with content:\n{metadata_str + file_content}")
+		repo.create_file(
+			path=file_path,
+			message=f"obsidian-refresher: {run_timestamp}",
+			content=metadata_str + file_content,
+		)
+		logger.info(f"Created {file_name} in github")
+
 
 
 def add_to_work_inbox(work_list):

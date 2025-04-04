@@ -53,7 +53,7 @@ def get_contacts():
 	return df
 
 
-def generate_content(appointment: dict, additional_description: list, start: datetime, end: datetime, created: datetime, updated: datetime):
+def generate_content(appointment: dict, start: datetime, end: datetime, created: datetime, updated: datetime):
 	content_dict = {
 		"summary": appointment["summary"],
 		"event-id": appointment["id"],
@@ -70,14 +70,11 @@ def generate_content(appointment: dict, additional_description: list, start: dat
 	return_string += "---\n\n"
 	if "description" in appointment.keys():
 		return_string += appointment["description"] + "\n\n"
-	if len(additional_description) > 0:
-		return_string += "\n".join(additional_description) + "\n\n"
 	return return_string
 
 def add_monica_activities(event_dict_list: list[dict]):
 	connection = create_server_connection("monica")
-	for event_dict in event_dict_list:
-		event, additional_description = event_dict["event"], event_dict["pre_list"]
+	for event in event_dict_list:
 		try:
 			timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			start = get_date_or_datetime(event, "start")
@@ -89,7 +86,7 @@ def add_monica_activities(event_dict_list: list[dict]):
 				if "happened_at" in event.keys()
 				else start.strftime("%Y-%m-%d")
 			)
-			description = generate_content(event, additional_description, start, end, created, updated)
+			description = generate_content(event, start, end, created, updated)
 			with connection.cursor() as cursor:
 				activities_values = tuple(
 					(
