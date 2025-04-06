@@ -157,10 +157,11 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 		logger.info(f"File {file_name} already exists in github but with different content")
 		old_metadata, old_content = get_previous_description(old_file_content)
 		if old_metadata:
-			metadata_dict.update(old_metadata)
+			old_metadata = {k: v for k, v in old_metadata.items() if v is not None and v != ""}
+			old_metadata.update(metadata_dict)
 
 		metadata_str = "---\n"
-		metadata_str += yaml.dump(metadata_dict, allow_unicode=False, default_flow_style=False)
+		metadata_str += yaml.dump(old_metadata, allow_unicode=False, default_flow_style=False)
 		metadata_str += "\n---\n\n"
 
 		repo.update_file(
