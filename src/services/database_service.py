@@ -4,6 +4,7 @@ import pandas as pd
 from quarter_lib.logging import setup_logging
 
 from src.helper.database_helper import close_server_connection, create_server_connection
+from src.services.telegram_service import send_to_telegram
 
 logger = setup_logging(__file__)
 
@@ -33,7 +34,7 @@ def get_timestamps(offset=0):
 	return start_of_week, end_of_week, today.isocalendar()[1]
 
 
-def get_ght_results(offset=-1):
+async def get_ght_results(offset=-1):
 	connection = create_server_connection("private", alchemy=True)
 	start_of_week, end_of_week, kw = get_timestamps(offset=offset)
 	ght = pd.read_sql(
@@ -44,8 +45,9 @@ def get_ght_results(offset=-1):
 	unique_timestamps = [pd.to_datetime(ts).replace(second=0) for ts in ght["created_at"]]
 	unique_timestamps = len(list(set(unique_timestamps)))
 	if len(ght) <= 0:
-		close_server_connection(connection)
-		raise Exception(f"No results found for week {kw}. Start of week: {start_of_week} /  end of week: {end_of_week}")
+		close_server_connection(connection, alchemy=True)
+		await send_to_telegram(f"No results found for week {kw}. Start of week: {start_of_week} /  end of week: {end_of_week}")
+		return pd.DataFrame(), 0, kw
 	ght_questions = pd.concat(
 		[
 			pd.read_sql("SELECT * FROM ght_questions_daily_evening WHERE notation IS NOT NULL AND multiplier > 0", connection),
