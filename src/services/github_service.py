@@ -76,7 +76,9 @@ def generate_file_content(summary:str, description:str) -> str:
 
 def get_files_with_modification_date(path):
 	try:
-		logger.info(f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering last modified date for {path}")
+		logger.info(
+			f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering created and last modified dates for {path}"
+		)
 		logger.info(f"git_ssh_cmd: {git_ssh_cmd}")
 		local_repo = git.Repo.clone_from(
 			ssh_url,
@@ -85,18 +87,37 @@ def get_files_with_modification_date(path):
 			env=dict(GIT_SSH_COMMAND=git_ssh_cmd),
 		)
 
-		file_last_modified = {}
-		for commit in local_repo.iter_commits(rev=branch_name):
+		file_dates = {}
+
+		# Get commits in chronological order (oldest first)
+		for commit in reversed(list(local_repo.iter_commits(rev=branch_name))):
 			for file_path in commit.stats.files:
 				if path in file_path:
-					path_to_check = os.path.join(repo_clone_dir, file_path)
-					if file_path not in file_last_modified and os.path.exists(path_to_check):
-						file_last_modified[file_path] = commit.committed_date
+					full_path = os.path.join(repo_clone_dir, file_path)
+					if not os.path.exists(full_path):
+						continue
 
-		contents = [{"path": k, "last_modified_date": v} for k, v in file_last_modified.items()]
+					# Initialize dictionary if seeing file for the first time
+					if file_path not in file_dates:
+						file_dates[file_path] = {
+							"created_date": commit.committed_date,
+							"last_modified_date": commit.committed_date,
+						}
+					else:
+						file_dates[file_path]["last_modified_date"] = commit.committed_date
+
+		contents = [
+			{
+				"path": k,
+				"created_date": v["created_date"],
+				"last_modified_date": v["last_modified_date"],
+			}
+			for k, v in file_dates.items()
+			if k.endswith(".md")
+		]
 	finally:
 		shutil.rmtree("temp_repo")
-	contents = [content for content in contents if content["path"].endswith(".md")]
+
 	return contents
 
 

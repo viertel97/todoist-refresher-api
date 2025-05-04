@@ -2,39 +2,55 @@ import os
 from datetime import datetime
 
 from fastapi import APIRouter
-from loguru import logger
+from quarter_lib.logging import setup_logging
 
 from src.helper import config_helper
+from src.services.github_service import get_files, get_files_with_modification_date
 from src.services.notion_service import (
 	DATABASES,
 	get_random_from_notion_link_list,
 )
-from src.services.todoist_service import get_data
+from src.services.todoist_service import get_data, add_obsidian_task_for_note
 
 router = APIRouter(prefix="/bi_monthly", tags=["bi_monthly"])
 
-logger.add(
-	os.path.join(os.path.dirname(os.path.abspath(__file__)) + "/logs/" + os.path.basename(__file__) + ".log"),
-	format="{time:YYYY-MM-DD at HH:mm:ss} | {level} | {message}",
-	backtrace=True,
-	diagnose=True,
-)
-
-TO_NOTION_LABEL_ID = "2160732004"
-TO_MICROJOURNAL_LABEL_ID = "2161901884"
-BOOK_REWORK_PROJECT_ID = "2300202317"
-BOOK_REWORK_2_PROJECT_ID = "2301632406"
-BOOK_REWORK_3_PROJECT_ID = "2302294413"
-RETHINK_PROJECT_ID = "2296630360"
+logger = setup_logging(__file__)
 
 
-def article_routine():
-	logger.info("start article_routine")
-	_, df_projects, _ = get_data()
 
-	article_database = config_helper.get_value("article", "name", DATABASES)["id"]
+@logger.catch
+@router.post("/whole_book_routine")
+def whole_book_routine():
+	logger.info("start whole_book_routine")
 
-	due = {"string": "15th"} if datetime.today().day == 1 else {"string": "1st"}
-	get_random_from_notion_link_list(article_database, df_projects, due=due)
+	files = get_files_with_modification_date("0200_Sources/Books")
 
-	logger.info("end article_routine")
+	now = datetime.now()
+	for file in files:
+		# int to datetime
+		file["created_date"] = datetime.fromtimestamp(file["created_date"])
+		file["last_modified_date"] = datetime.fromtimestamp(file["last_modified_date"])
+
+		relative_last_modified_date = (now - file["last_modified_date"]).days
+		relative_created_date = (now - file["created_date"]).days
+
+
+
+		file["score"] = relative_created_date * 0.6 + relative_last_modified_date * 0.4
+		if relative_last_modified_date > 365:
+			file["score"] = file["score"] * (relative_last_modified_date / 365)
+
+	sorted_files = sorted(files, key=lambda x: x["score"], reverse=True)
+
+	file = sorted_files[0]
+
+	# check if today is saturday
+	if now.weekday() == 5:
+		due_string = "today"
+	else:
+		due_string = "1st Saturday"
+
+	add_obsidian_task_for_note(file["path"], "Oldest book file - time to rework whole book!", due_string=due_string)
+	logger.info("selected oldest file '{}'".format(file["path"]))
+
+	logger.info("end whole_book_routine")

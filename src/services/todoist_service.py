@@ -337,13 +337,13 @@ def check_if_last_item(book_title, items):
 	)
 
 
-def add_obsidian_task_for_note(file_name, description=None):
+def add_obsidian_task_for_note(file_name, description=None, due_string="tomorrow"):
 	content = f"{file_name} §§§ Obsidian-Notiz überarbeiten"
 	task = TODOIST_API.add_task(
 		content=content,
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
 		description=description,
-		due_string="tomorrow",
+		due_string=due_string,
 		labels=["Digital"],
 	)
 	return task
