@@ -13,7 +13,7 @@ from src.config.api_documentation import description, tags_metadata, title
 from src.helper.google_helper import test_service
 from src.helper.network_helper import log_request_info
 from src.jobs import (
-	bi_monthly,
+	monthly,
 	bi_weekly,
 	daily,
 	hourly,
@@ -21,7 +21,7 @@ from src.jobs import (
 )
 from src.services.telegram_service import send_to_telegram
 
-controllers = [bi_weekly, bi_monthly, daily, hourly, weekly]
+controllers = [bi_weekly, monthly, daily, hourly, weekly]
 
 logger = setup_logging(__name__)
 

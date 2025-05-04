@@ -12,7 +12,7 @@ from src.services.notion_service import (
 )
 from src.services.todoist_service import get_data, add_obsidian_task_for_note
 
-router = APIRouter(prefix="/bi_monthly", tags=["bi_monthly"])
+router = APIRouter(prefix="/monthly", tags=["monthly"])
 
 logger = setup_logging(__file__)
 
