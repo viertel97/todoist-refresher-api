@@ -20,11 +20,6 @@ spec:
       labels:
         {{- include "todoist-refresher-api.selectorLabels" . | nindent 8 }}
     spec:
-      volumes:
-        - name: ssh-keys-v
-          secret:
-            secretName: ssh-keys
-            defaultMode: 0600
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -39,10 +34,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           # mount secret to /ssh
-          volumeMounts:
-            - name: ssh-keys-v
-              readOnly: true
-              mountPath: "/ssh"
           env:
             - name: access_id
               valueFrom:
@@ -54,11 +45,6 @@ spec:
                 secretKeyRef:
                   name: akeyless-secret
                   key: access_key
-            - name: habit_list
-              valueFrom:
-                secretKeyRef:
-                  name: todoist-refresher-secret
-                  key: habit_list
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}

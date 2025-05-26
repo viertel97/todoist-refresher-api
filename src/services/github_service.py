@@ -19,11 +19,9 @@ github_token = get_secrets(["github/pat_obsidian"])
 
 g = Github(github_token)
 
-temp = Path("/ssh/id_rsa")
-git_ssh_cmd = "ssh -i %s" % temp
 branch_name = "main"
 repo_clone_dir = "temp_repo"
-ssh_url = "git@github.com:viertel97/obsidian.git"
+ssh_url = f"https://viertel97:{github_token}@github.com/viertel97/obsidian.git"
 
 WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 
@@ -79,12 +77,12 @@ def get_files_with_modification_date(path):
 		logger.info(
 			f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering created and last modified dates for {path}"
 		)
-		logger.info(f"git_ssh_cmd: {git_ssh_cmd}")
+		os.makedirs(repo_clone_dir, exist_ok=True)
 		local_repo = git.Repo.clone_from(
 			ssh_url,
 			to_path=repo_clone_dir,
 			branch=branch_name,
-			env=dict(GIT_SSH_COMMAND=git_ssh_cmd),
+			env={"GIT_TERMINAL_PROMPT": "0"},
 		)
 
 		file_dates = {}
