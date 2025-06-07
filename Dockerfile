@@ -23,8 +23,6 @@ ENV PATH="/project/.venv/bin:$PATH"
 ENV PYTHONPATH="/project"
 
 EXPOSE 9100
-RUN echo "    IdentityFile /ssh/id_rsa" >> /etc/ssh/ssh_config
-RUN echo "    StrictHostKeyChecking no" >> /etc/ssh/ssh_config
 
 COPY src /project/src
 

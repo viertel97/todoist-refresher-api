@@ -166,14 +166,14 @@ async def add_cubox_annotations_to_obsidian() -> None:
 
 		return_string += "---\n\n"
 		content, list_of_tasks = generate_content_from_annotations(annotations, list_of_tasks)
+		if content:
+			return_string += content
 		list_of_files.append({"filename": f"{slugify(group_dict['title'])}.md", "content": return_string})
 
 		update_checkbox_result = update_notion_page_checkbox(group_dict["id_collection"], "SyncedToObsidian", True)
 		logger.info(update_checkbox_result)
 		logger.info(f"Updated Notion page {group_dict['id_collection']} for {group_dict['title']}")
 		time.sleep(5)
-
-	# files_in_repo = get_files(f"0200_Sources/Websites")
 
 	if list_of_files:
 		add_files_to_repository(list_of_files, f"obsidian-refresher: {datetime.now()}", "0200_Sources/Websites/")
