@@ -195,6 +195,10 @@ def get_mobile_deep_link(cubox_deep_link: str) -> str:
 
 
 def add_cubox_reading_task_to_todoist(weighted=True) -> None:
+	if get_user_karma_vacation():
+		logger.info("User is on vacation - skipping cubox reading task")
+		return
+
 	df_collections = get_collections_data(done_reading=False, synced_to_obsidian=False)
 	df_collections.sort_values("created", ascending=False, inplace=True)
 	df_collections["cubox_deep_link_mobile"] = df_collections["cubox_deep_link"].apply(lambda x: get_mobile_deep_link(x))
