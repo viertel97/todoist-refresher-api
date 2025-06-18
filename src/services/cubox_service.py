@@ -12,7 +12,7 @@ from src.helper.path_helper import slugify
 from src.services.book_note_service import add_rework_tasks
 from src.services.github_service import add_files_to_repository, get_files
 from src.services.notion_service import NOTION_IDS, get_database, update_notion_page_checkbox
-from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task
+from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task, get_user_karma_vacation
 
 logger = setup_logging(__file__)
 
