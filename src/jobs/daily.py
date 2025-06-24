@@ -57,7 +57,7 @@ def monica(check_for_next_day=False):
 	events = get_events_for_days()
 	events_today, _ = was_at_day(events, 0, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
-	events_today = [event for event in events_today if filter_event(event[0]["summary"])]
+	events_today = [event for event in events_today if filter_event(event["summary"])]
 	if len(events_today) > 0:
 		# TODO: add matched schema so afterwards we can also add
 		#  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
@@ -66,36 +66,19 @@ def monica(check_for_next_day=False):
 
 	logger.info("end daily - monica (tomorrow)") if check_for_next_day else logger.info("end daily - monica (today)")
 
+	return events_today
+
 
 @logger.catch
 @router.post("/monica-morning")
 def monica_morning():
-	monica(check_for_next_day=False)
+	return monica(check_for_next_day=False)
 
 
 @logger.catch
 @router.post("/monica-evening")
 def monica_evening():
-	monica(check_for_next_day=True)
-
-
-@logger.catch
-@router.post("/monica_before_tasks/{days_in_future}")
-def monica_before_tasks(days_in_future: Annotated[int, Path(title="The ID of the item to get")]):
-	logger.info("start daily - monica (preparation for today + " + str(days_in_future) + " days)")
-	events = get_events()
-	events_at_selected_date, selected_date = was_at_day(events, days_in_future)
-	logger.info(f"number of appointments at date ({selected_date}): {len(events_at_selected_date)!s}")
-	activities = get_activities(days_in_future)
-	logger.info(f"number of activities at sdate ({selected_date}): {len(activities)!s}")
-	list_of_calendar_events = [
-		event[1] for event in events_at_selected_date if event[1] is not None
-	]  # because to check if the event has an "before" task
-	# if len(activities) > 0:
-	#    activities = update_activities_without_date(activities)
-	if len(activities) > 0 and len(list_of_calendar_events) > 0:
-		add_before_tasks(activities, events_at_selected_date)
-	logger.info("end daily - monica (preparation for tomorrow)")
+	return monica(check_for_next_day=True)
 
 
 @logger.catch
@@ -173,19 +156,6 @@ def links():
 	get_random_from_notion_link_list(link_list_database)
 
 	logger.info("end daily - links")
-
-
-def monica_calls():
-	logger.info("start daily - monica (calls)")
-
-	events = get_call_events()
-
-	events = [(event, event["description"]) for event in events]
-	logger.info("found " + str(len(events)) + " Google Calendar events for calls")
-	if len(events) > 0:
-		add_tasks(TODOIST_API, events, [])
-		add_monica_activities(events)
-
 
 filter_list = ["K"]
 filter_list_in = ["Drive from", "Buchungsschnitt"]
@@ -270,7 +240,7 @@ async def order_shopping_list_categories():
 @router.post("/daily_cubox_to_obsidian_routine")
 async def daily_cubox_routine():
 	logger.info("start daily - cubox routine")
-	add_cubox_annotations_to_obsidian()
+	await add_cubox_annotations_to_obsidian()
 	logger.info("end daily - cubox routine")
 
 

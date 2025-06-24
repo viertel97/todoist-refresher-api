@@ -77,8 +77,8 @@ def mm():
 
 @logger.catch
 @router.post("/ght_update")
-def ght_update():
-	update_ght()
+async def ght_update():
+	await update_ght()
 
 
 @logger.catch

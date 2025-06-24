@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timedelta
 
 import pandas as pd
@@ -13,6 +14,7 @@ from quarter_lib_old.todoist import (
 	move_item_to_project,
 	move_item_to_section,
 	update_due,
+	run_sync_commands,
 )
 from todoist_api_python.api import TodoistAPI
 from todoist_api_python.headers import create_headers
@@ -271,6 +273,14 @@ supplements = {
 time_to_order = 10
 
 
+def run_todoist_sync_commands(commands):
+	for command in commands:
+		command["uuid"] = str(uuid.uuid4())
+		if not command.get("temp_id"):
+			command["temp_id"] = str(uuid.uuid4())
+	return run_sync_commands(commands)
+
+
 def check_order_supplements(df):
 	used_this_year = df["properties~Supplements~checkbox"].value_counts().to_dict()[True]
 	for key in supplements:
@@ -327,13 +337,13 @@ def check_if_last_item(book_title, items):
 	)
 
 
-def add_obsidian_task_for_note(file_name, description=None):
+def add_obsidian_task_for_note(file_name, description=None, due_string="tomorrow"):
 	content = f"{file_name} §§§ Obsidian-Notiz überarbeiten"
 	task = TODOIST_API.add_task(
 		content=content,
 		project_id=OBSIDIAN_REWORK_PROJECT_ID,
 		description=description,
-		due_string="tomorrow",
+		due_string=due_string,
 		labels=["Digital"],
 	)
 	return task

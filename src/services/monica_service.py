@@ -12,6 +12,7 @@ from quarter_lib_old.google import (
 	get_events_from_calendar,
 )
 from quarter_lib_old.todoist import move_item_to_project, update_due
+from todoist_api_python.api import TodoistAPI
 
 from src.helper.date_helper import get_date_or_datetime
 from src.services.monica_database_service import (
@@ -144,10 +145,9 @@ def was_at_day(event_list, days, check_for_next_day=False):
 			if start <= selected_day <= end:
 				if "description" in event.keys():
 					if "#ignore" not in event["description"]:
-						pre_list = get_pre_from_event(event)
-						events.append((event, pre_list))
+						events.append(event)
 				else:
-					events.append((event, None))
+					events.append(event)
 	return events, selected_day
 
 
@@ -173,25 +173,25 @@ def is_multiday_event(appointment):
 	return False
 
 
-def add_tasks(api, appointment_list, activities):
-	if len(appointment_list) > 0:
-		for appointment, calendar_description in appointment_list:
-			logger.info("adding Todoist task: " + str(appointment))
-			appointment_time = get_date_or_datetime(appointment, "end")
-			if appointment_time.time() <= DAILY_LINKS_THRESHOLD:
+def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
+	if len(events) > 0:
+		for event in events:
+			logger.info("adding Todoist task: " + str(event))
+			event_time = get_date_or_datetime(event, "end")
+			if event_time.time() <= DAILY_LINKS_THRESHOLD:
 				due = {"string": "Today"}
 			else:
 				due = {"string": "Tomorrow"}
-			is_multiday = is_multiday_event(appointment)
+			is_multiday = is_multiday_event(event)
 			if is_multiday:
 				today = datetime.today()
-				appointment["happened_at"] = today.strftime("%Y-%m-%d")
-				appointment["summary"] = (
-					appointment["summary"] + f" (Tag {is_multiday!s} - {appointment['happened_at']} - {today.strftime('%A')})"
+				event["happened_at"] = today.strftime("%Y-%m-%d")
+				event["summary"] = (
+					event["summary"] + f" (Tag {is_multiday!s} - {event['happened_at']} - {today.strftime('%A')})"
 				)
-			content = "'" + appointment["summary"] + "'" + " - nacharbeiten & Tracker pflegen"
+			content = "'" + event["summary"] + "'" + " - nacharbeiten & Tracker pflegen"
 			logger.info("content: " + str(content))
-			description = get_description(activities, calendar_description)
+			description = get_description(activities)
 			item = api.add_task(
 				content,
 				description=description,
@@ -207,15 +207,12 @@ def add_tasks(api, appointment_list, activities):
 			logger.info("added Todoist task: " + str(item))
 
 
-def get_description(activities, calendar_description=None):
+def get_description(activities):
 	description_string = ""
 	for activity in activities:
 		description_string += "* " + activity["summary"] + ": \n"
 		description_string += activity["description"].replace("*", "  *")
 		description_string += "\n\n"
-	if calendar_description is not None:
-		description_string += "  * Kalender: \n"
-		description_string += calendar_description.replace("*", "    *")
 	return description_string
 
 

@@ -7,9 +7,12 @@ from src.services.todoist_service import TODOIST_API
 logger = setup_logging(__file__)
 
 
-def update_ght():
+async def update_ght():
 	logger.info("start update_good_habit_tracker")
-	ght, total, kw = get_ght_results()
+	ght, total, kw = await get_ght_results()
+	if len(ght) <= 0:
+		logger.info("No results found for week {}".format(kw))
+		return
 	total_text = "Total: " + str(total) + "€"
 	total_text = ght.to_string(index=False, header=False) + "\n\n" + total_text
 	due = {"string": "Monday 10am"}

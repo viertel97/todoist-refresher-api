@@ -13,6 +13,7 @@ from src.services.todoist_service import (
 	get_items_by_todoist_project,
 	get_rework_projects,
 	update_task_due,
+  	get_vacation_mode,
 )
 
 router = APIRouter(prefix="/bi_weekly", tags=["bi_weekly"])
@@ -32,6 +33,10 @@ RETHINK_PROJECT_ID = "2296630360"
 def obsidian_random_note():
 	logger.info("start bi-daily - obsidian - random note")
 
+	if get_vacation_mode():
+		logger.info("Vacation mode is enabled, skipping random note selection")
+		return
+
 	files = get_files("0000_Zettelkasten")
 
 	file = random.choice(files)
@@ -45,6 +50,10 @@ def obsidian_random_note():
 @router.post("/obsidian_oldest_note")
 def obsidian_oldest_note():
 	logger.info("start bi-daily - obsidian - oldest note")
+
+	if get_vacation_mode():
+		logger.info("Vacation mode is enabled, skipping oldest note selection")
+		return
 
 	files = get_files_with_modification_date("0000_Zettelkasten")
 	sorted_files = sorted(files, key=lambda x: x["last_modified_date"], reverse=False)
@@ -60,6 +69,10 @@ def obsidian_oldest_note():
 def obsidian_random_activity():
 	logger.info("start bi-daily - obsidian - random activity")
 
+	if get_vacation_mode():
+		logger.info("Vacation mode is enabled, skipping random activity selection")
+		return
+
 	files = get_files("0300_Spaces/Social Circle/Activities")
 
 	file = random.choice(files)
@@ -72,11 +85,21 @@ def obsidian_random_activity():
 @logger.catch
 @router.post("/update_book_rework_weighted")
 def update_book_rework_weighted():
+
+	if get_vacation_mode():
+		logger.info("Vacation mode is enabled, skipping book rework update")
+		return
+
 	update_book_rework(True)
 
 
 @router.post("/update_book_rework_unweighted")
 def update_book_rework_unweighted():
+
+	if get_vacation_mode():
+		logger.info("Vacation mode is enabled, skipping book rework update")
+		return
+
 	update_book_rework(False)
 
 

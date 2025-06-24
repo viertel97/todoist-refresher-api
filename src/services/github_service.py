@@ -19,43 +19,39 @@ github_token = get_secrets(["github/pat_obsidian"])
 
 g = Github(github_token)
 
-temp = Path("/ssh/id_rsa")
-git_ssh_cmd = "ssh -i %s" % temp
 branch_name = "main"
 repo_clone_dir = "temp_repo"
-ssh_url = "git@github.com:viertel97/obsidian.git"
+ssh_url = f"https://viertel97:{github_token}@github.com/viertel97/obsidian.git"
 
 WORK_INBOX_FILE_PATH = "/0300_Spaces/Work/Index.md"
 
 
 def get_previous_description(previous_desc):
+	if previous_desc is None:
+		return None, None
 	desc = previous_desc.split("---")
 	if len(desc) > 1:
-		temp_desc = desc[1]
-		temp_desc = temp_desc.replace("\r", "").replace("\n", "").replace("\t", "").replace("  ", "")
-		temp_desc = temp_desc.replace(",}", "}")
-		temp_json = json.loads(temp_desc)
-		# remove two first characters from desc
-		return {k: v for k, v in temp_json.items() if v}, desc[2][1:]
+		desc_dict = yaml.load(desc[1], Loader=yaml.FullLoader)
+		return desc_dict, desc[2]
 	return None, previous_desc
 
 
 def generate_metadata(
-	summary,
+	summary: str,
 	people: list,
 	emotions: list,
-	happened_at,
-	created_at,
-	updated_at,
-	uuid,
-	original_description,
+	happened_at: datetime,
+	created_at: datetime,
+	updated_at: datetime,
+	uuid: str,
+	original_description: str,
 	drugs,
-):
+) -> tuple[dict, str]:
 	metadata_json = {
 		"summary": summary,
-		"created_at": created_at.strftime("%d-%m-%Y %H:%M:%S"),
+		"created_at": created_at.strftime("%Y-%m-%dT%H:%M:%S"),
 		"happened_at": happened_at.strftime("%Y-%m-%d"),
-		"updated_at": updated_at.strftime("%d-%m-%Y %H:%M:%S"),
+		"updated_at": updated_at.strftime("%Y-%m-%dT%H:%M:%S"),
 		"uuid": uuid,
 		"people": [f"[[{person}]]" for person in people],
 		"emotions": emotions,
@@ -66,18 +62,10 @@ def generate_metadata(
 	if additional_metadata:
 		metadata_json.update(additional_metadata)
 
-	return_string = "---\n"
-	return_string += yaml.dump(metadata_json, allow_unicode=False, default_flow_style=False)
-	return_string += "\n---\n\n"
-	return_string += "# People\n"
-	for person in people:
-		return_string += f"- [[{person}]]\n"
-	return_string += "\n"
-
-	return return_string, cleaned_description
+	return metadata_json, cleaned_description
 
 
-def generate_file_content(summary, description):
+def generate_file_content(summary:str, description:str) -> str:
 	return_string = f"# {summary}\n\n"
 	if description:
 		return_string += f"{description}\n\n"
@@ -86,27 +74,48 @@ def generate_file_content(summary, description):
 
 def get_files_with_modification_date(path):
 	try:
-		logger.info(f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering last modified date for {path}")
-		logger.info(f"git_ssh_cmd: {git_ssh_cmd}")
+		logger.info(
+			f"Cloning repo {ssh_url} to {repo_clone_dir} and branch {branch_name} and gathering created and last modified dates for {path}"
+		)
+		os.makedirs(repo_clone_dir, exist_ok=True)
 		local_repo = git.Repo.clone_from(
 			ssh_url,
 			to_path=repo_clone_dir,
 			branch=branch_name,
-			env=dict(GIT_SSH_COMMAND=git_ssh_cmd),
+			env={"GIT_TERMINAL_PROMPT": "0"},
 		)
 
-		file_last_modified = {}
-		for commit in local_repo.iter_commits(rev=branch_name):
+		file_dates = {}
+
+		# Get commits in chronological order (oldest first)
+		for commit in reversed(list(local_repo.iter_commits(rev=branch_name))):
 			for file_path in commit.stats.files:
 				if path in file_path:
-					path_to_check = os.path.join(repo_clone_dir, file_path)
-					if file_path not in file_last_modified and os.path.exists(path_to_check):
-						file_last_modified[file_path] = commit.committed_date
+					full_path = os.path.join(repo_clone_dir, file_path)
+					if not os.path.exists(full_path):
+						continue
 
-		contents = [{"path": k, "last_modified_date": v} for k, v in file_last_modified.items()]
+					# Initialize dictionary if seeing file for the first time
+					if file_path not in file_dates:
+						file_dates[file_path] = {
+							"created_date": commit.committed_date,
+							"last_modified_date": commit.committed_date,
+						}
+					else:
+						file_dates[file_path]["last_modified_date"] = commit.committed_date
+
+		contents = [
+			{
+				"path": k,
+				"created_date": v["created_date"],
+				"last_modified_date": v["last_modified_date"],
+			}
+			for k, v in file_dates.items()
+			if k.endswith(".md")
+		]
 	finally:
 		shutil.rmtree("temp_repo")
-	contents = [content for content in contents if content["path"].endswith(".md")]
+
 	return contents
 
 
@@ -132,10 +141,6 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	file_path = (
 		f"0300_Spaces/Social Circle/Activities/{sql_entry['happened_at'].year!s}/{sql_entry['happened_at'].strftime('%m-%B')!s}/{file_name}"
 	)
-	if file_path in files_in_repo:
-		logger.info(f"File {file_name} already exists in github")
-		await send_to_telegram(f"File {file_name} already exists in github")
-		return
 
 	people = "" if sql_entry["people"] is None else sorted(sql_entry["people"].split("~"))
 	# remove "Inbox" from people if it exists
@@ -148,12 +153,9 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	updated_at = sql_entry["updated_at"]
 	uuid = sql_entry["uuid"]
 	description = sql_entry["description"]
-
 	drugs = drug_date_dict.get(happened_at, [])
 
-	logger.info(f"Changing filename from {sql_entry['filename']} to {file_name}")
-
-	metadata, cleaned_description = generate_metadata(
+	metadata_dict, cleaned_description = generate_metadata(
 		summary,
 		people,
 		emotions,
@@ -166,13 +168,44 @@ async def create_obsidian_markdown_in_git(sql_entry, run_timestamp, drug_date_di
 	)
 
 	file_content = generate_file_content(summary, cleaned_description)
-	logger.info(f"Creating {file_name} in github with content:\n{metadata + file_content}")
-	repo.create_file(
-		path=file_path,
-		message=f"obsidian-refresher: {run_timestamp}",
-		content=metadata + file_content,
-	)
-	logger.info(f"Created {file_name} in github")
+
+
+	if file_path in files_in_repo:
+		old_file = repo.get_contents(file_path)
+		old_file_content = old_file.decoded_content.decode("utf-8")
+		logger.info(f"File {file_name} already exists in github but with different content")
+		old_metadata, old_content = get_previous_description(old_file_content)
+		if old_metadata:
+			old_metadata = {k: v for k, v in old_metadata.items() if v is not None and v != ""}
+			old_metadata.update(metadata_dict)
+
+		metadata_str = "---\n"
+		metadata_str += yaml.dump(old_metadata, allow_unicode=False, default_flow_style=False)
+		metadata_str += "\n---\n\n"
+
+		repo.update_file(
+			path=file_path,
+			message=f"obsidian-refresher: {run_timestamp}",
+			content=metadata_str + old_content + file_content,
+			sha=old_file.sha,
+		)
+		logger.info(f"Updated {file_name} in github")
+		await send_to_telegram(f"{file_name} already exists - updating it with new content")
+	else:
+		metadata_str = "---\n"
+		metadata_str += yaml.dump(metadata_dict, allow_unicode=False, default_flow_style=False)
+		metadata_str += "\n---\n\n"
+
+		logger.info(f"Changing filename from {sql_entry['filename']} to {file_name}")
+
+		logger.info(f"Creating {file_name} in github with content:\n{metadata_str + file_content}")
+		repo.create_file(
+			path=file_path,
+			message=f"obsidian-refresher: {run_timestamp}",
+			content=metadata_str + file_content,
+		)
+		logger.info(f"Created {file_name} in github")
+
 
 
 def add_to_work_inbox(work_list):
