@@ -395,3 +395,12 @@ def get_rework_projects():
 		if project.name.startswith("Book-Rework"):
 			rework_projects.append(project)
 	return rework_projects
+
+
+check_string = "- [Link](https://cubox.cc"
+
+
+def get_cubox_rework_items() -> list:
+	tasks = TODOIST_API.get_tasks(project_id="2244725398")
+	filtered_tasks = [task for task in tasks if check_string in task.content]
+	return filtered_tasks
