@@ -12,7 +12,7 @@ from src.helper.path_helper import slugify
 from src.services.book_note_service import add_rework_tasks
 from src.services.github_service import add_files_to_repository, get_files
 from src.services.notion_service import NOTION_IDS, get_database, update_notion_page_checkbox
-from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task, get_vacation_mode
+from src.services.todoist_service import THIS_WEEK_PROJECT_ID, add_todoist_task, get_vacation_mode, get_cubox_rework_items
 
 logger = setup_logging(__file__)
 
@@ -22,16 +22,18 @@ OBSIDIAN_AUTOSTART_TRIGGER = "Obsidian-Eintrag überdenken"
 COLLECTIONS_ID = NOTION_IDS["COLLECTIONS_ID"]
 ANNOTATIONS_ID = NOTION_IDS["ANNOTATIONS_ID"]
 
-GROUP_COLUMNS = sorted([
-	"id_collection",
-	"created_collection",
-	"description",
-	"folder",
-	"type",
-	"cubox_deep_link_collection",
-	"updated_collection",
-	"title",
-])
+GROUP_COLUMNS = sorted(
+	[
+		"id_collection",
+		"created_collection",
+		"description",
+		"folder",
+		"type",
+		"cubox_deep_link_collection",
+		"updated_collection",
+		"title",
+	]
+)
 
 
 def get_collections_data(done_reading=True, synced_to_obsidian=False) -> pd.DataFrame:
@@ -197,6 +199,10 @@ def get_mobile_deep_link(cubox_deep_link: str) -> str:
 def add_cubox_reading_task_to_todoist(weighted=True) -> None:
 	if get_vacation_mode():
 		logger.info("User is on vacation - skipping cubox reading task")
+		return
+
+	if len(get_cubox_rework_items()) >= 2:
+		logger.info("Too many cubox rework items - skipping cubox reading task")
 		return
 
 	df_collections = get_collections_data(done_reading=False, synced_to_obsidian=False)

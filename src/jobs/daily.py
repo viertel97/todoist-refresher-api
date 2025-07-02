@@ -160,7 +160,7 @@ def links():
 filter_list = ["K"]
 filter_list_in = ["Drive from", "Buchungsschnitt"]
 filter_list_ends_with = ["'s birthday"]
-filter_list_starts_with = ["Namenstag", "Hochzeitstag"]
+filter_list_starts_with = ["Namenstag", "Hochzeitstag", "Name day"]
 filter_list_regex = [r"\w+\sHbf\s→\s\w+\sHbf"]
 
 
