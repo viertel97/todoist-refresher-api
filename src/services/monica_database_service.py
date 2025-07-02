@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pandas as pd
 import pymysql.cursors
+from github import UnknownObjectException
 from loguru import logger
 
 from src.config.queries import activity_query
@@ -170,7 +171,11 @@ async def add_to_be_deleted_activities_to_obsidian(deletion_list):
 	connection = create_server_connection("monica")
 	timestamp = datetime.now()
 	# get files for the current month and the last month
-	files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
+	try:
+		files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
+	except UnknownObjectException as e: # folder for month not created yet
+		logger.error(f"UnknownObjectException: {e}")
+		files_in_repo = []
 	files_in_repo.extend(
 		get_files(
 			f"0300_Spaces/Social Circle/Activities/{(timestamp - relativedelta(months=1)).year!s}/{(timestamp - relativedelta(months=1)).strftime('%m-%B')!s}"
