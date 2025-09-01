@@ -9,7 +9,6 @@ authors = [
 dependencies = [
     "numpy==2.2.1",
     "pandas==2.2.3",
-    "pymysql==1.1.1",
     "pytz==2024.2",
     "requests==2.32.3",
     "loguru==0.7.3",
@@ -17,18 +16,14 @@ dependencies = [
     "msal==1.31.1",
     "python-dotenv==1.0.1",
     "PyGithub==2.5.0",
-    "google-api-python-client==2.156.0",
-    "google-auth-oauthlib==1.2.1",
     "python-telegram-bot==21.9",
     "uvicorn==0.34.0",
     "fastapi==0.115.6",
     "GitPython==3.1.43",
     "edge-tts==7.0.0",
     "langchain-groq==0.2.2",
-    "quarter-lib-old",
     "python-dateutil==2.9.0.post0",
-    "todoist-api-python==2.1.7",
-    "quarter-lib==0.0.25",
+    "quarter-lib==0.0.36",
     "SQLAlchemy>=2.0.37",
 ]
 packages = [{ include = "todo", from = "src" }]

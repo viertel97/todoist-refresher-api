@@ -1,5 +1,5 @@
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.todoist import update_due
+from quarter_lib.todoist import update_due
 
 from src.services.database_service import get_ght_results
 from src.services.todoist_service import TODOIST_API

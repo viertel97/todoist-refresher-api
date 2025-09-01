@@ -1,7 +1,7 @@
 import os
 
 from loguru import logger
-from quarter_lib_old.google import build_calendar_service
+from quarter_lib.google_calendar import build_calendar_service
 
 from src.services.monica_database_service import (
 	close_server_connection,

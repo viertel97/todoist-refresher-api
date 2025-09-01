@@ -5,7 +5,7 @@ import pandas as pd
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.todoist import (
+from quarter_lib.todoist import (
 	add_reminder,
 	get_activity,
 	get_items_by_label,
@@ -15,9 +15,9 @@ from quarter_lib_old.todoist import (
 	move_item_to_section,
 	update_due,
 	run_sync_commands,
+    create_headers
 )
 from todoist_api_python.api import TodoistAPI
-from todoist_api_python.headers import create_headers
 
 logger = setup_logging(__file__)
 DEFAULT_OFFSET = timedelta(hours=2)

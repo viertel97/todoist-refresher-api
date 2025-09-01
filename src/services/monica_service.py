@@ -6,12 +6,12 @@ import requests
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
-from quarter_lib_old.google import (
+from quarter_lib.google_calendar import (
     build_calendar_service,
     get_dict,
     get_events_from_calendar,
 )
-from quarter_lib_old.todoist import move_item_to_project, update_due
+from quarter_lib.todoist import move_item_to_project, update_due
 from todoist_api_python.api import TodoistAPI
 
 from src.helper.date_helper import get_date_or_datetime

@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import requests
 from quarter_lib.logging import setup_logging
-from todoist_api_python.endpoints import get_sync_url
+from quarter_lib.todoist import get_sync_url
 
 from src.helper.web_helper import get_habits_from_web
 from src.services.todoist_service import HEADERS

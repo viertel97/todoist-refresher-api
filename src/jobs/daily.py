@@ -12,6 +12,7 @@ from src.helper.path_helper import slugify
 from src.helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
 from src.services.cubox_service import add_cubox_annotations_to_obsidian, add_cubox_reading_task_to_todoist
 from src.services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
+from src.services.google_service import create_travel_events_for_upcoming_calendar_events
 from src.services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from src.services.monica_database_service import add_monica_activities, update_archive
 from src.services.monica_service import (
@@ -79,6 +80,13 @@ def monica_morning():
 @router.post("/monica-evening")
 def monica_evening():
 	return monica(check_for_next_day=True)
+
+@logger.catch
+@router.post("/distance_events")
+def distance_events():
+	logger.info("start distance_events")
+	create_travel_events_for_upcoming_calendar_events()
+	logger.info("end distance_events")
 
 
 @logger.catch
