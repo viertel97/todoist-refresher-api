@@ -85,8 +85,9 @@ def monica_evening():
 @router.post("/distance-events")
 def distance_events():
 	logger.info("start distance_events")
-	create_travel_events_for_upcoming_calendar_events()
+	created_events = create_travel_events_for_upcoming_calendar_events()
 	logger.info("end distance_events")
+	return created_events
 
 
 @logger.catch
