@@ -23,7 +23,7 @@ dependencies = [
     "edge-tts==7.0.0",
     "langchain-groq==0.2.2",
     "python-dateutil==2.9.0.post0",
-    "quarter-lib==0.0.36",
+    "quarter-lib==0.0.37",
     "SQLAlchemy>=2.0.37",
 ]
 packages = [{ include = "todo", from = "src" }]

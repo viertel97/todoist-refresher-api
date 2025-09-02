@@ -5,7 +5,7 @@
 groups = ["default", "dev", "documentation", "linting", "security", "testing", "type-checking"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:eca993ea7e467100b35a01df24a16e0b88de893e27ca95fb709b0860f0e55c66"
+content_hash = "sha256:383b27fd0496205d4135a7e59692d0d4e73bc6786c525e4e64c7f216193992e3"
 
 [[metadata.targets]]
 requires_python = "==3.11.*"
@@ -1367,7 +1367,7 @@ files = [
 
 [[package]]
 name = "quarter-lib"
-version = "0.0.36"
+version = "0.0.37"
 requires_python = ">=3.6"
 summary = "TBD"
 dependencies = [
@@ -1383,8 +1383,8 @@ dependencies = [
     "todoist-api-python==3.1.0",
 ]
 files = [
-    {file = "quarter_lib-0.0.36-py3-none-any.whl", hash = "sha256:d677f27fc0495cbe6566f4e42e44f9c49c61508fffb7c49f37618342dbd88ca6"},
-    {file = "quarter_lib-0.0.36.tar.gz", hash = "sha256:5ab8dad08a702c6506f5f7e8dc64c8c9a5259a7324f589be5d2640afe57040d1"},
+    {file = "quarter_lib-0.0.37-py3-none-any.whl", hash = "sha256:775c1cc3f1a6952ffff95ebbb6e34af1580e25a0154d15ffe9d6cdc737f6f0f1"},
+    {file = "quarter_lib-0.0.37.tar.gz", hash = "sha256:10a814024462f0cf285487352fe4ac4b802c52186b169064d6379500b2901379"},
 ]
 
 [[package]]
