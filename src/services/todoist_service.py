@@ -19,6 +19,8 @@ from quarter_lib.todoist import (
 )
 from todoist_api_python.api import TodoistAPI
 
+from itertools import chain
+
 logger = setup_logging(__file__)
 DEFAULT_OFFSET = timedelta(hours=2)
 
@@ -68,8 +70,12 @@ TO_RETHINK_DONE_LABEL_ID = "2163807453"
 OBSIDIAN_REWORK_PROJECT_ID = "2304525222"
 
 
+def get_from_iterable(iterable):
+    return list(chain.from_iterable(iterable))
+
+
 def get_projects():
-	projects = TODOIST_API.get_projects()
+	projects = get_from_iterable(TODOIST_API.get_projects())
 	df_projects = pd.DataFrame(projects)
 	df_projects = df_projects[df_projects.name.isin(PROJECT_LIST)]
 	return df_projects
@@ -82,8 +88,8 @@ def get_default_offset():
 
 
 def get_data():
-	df_items = pd.DataFrame(item.__dict__ for item in TODOIST_API.get_tasks())
-	df_projects = pd.DataFrame(item.__dict__ for item in TODOIST_API.get_projects())
+	df_items = pd.DataFrame(item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks()))
+	df_projects = pd.DataFrame(item.__dict__ for item in get_from_iterable(TODOIST_API.get_projects()))
 
 	df_projects = df_projects[df_projects.name.isin(PROJECT_LIST)]
 	df_items_due = df_items.loc[~df_items.due.isna()]
@@ -220,11 +226,11 @@ def get_vacation_mode():
 
 
 def get_items_by_todoist_label(label_id):
-	return get_items_by_label(label_id)
+    return get_from_iterable(get_items_by_label(label_id=label_id))
 
 
 def get_items_by_content(content_list):
-	tasks = TODOIST_API.get_tasks()
+	tasks = get_from_iterable(TODOIST_API.get_tasks())
 	result = [task for task in tasks if any(content in task.content for content in content_list)]
 	result = [task for task in result if not any(label in task.labels for label in ["To-Rethink-Done"])]
 	return result
@@ -306,11 +312,11 @@ def add_item_and_reminder(content, project_id, due):
 
 
 def get_items_by_todoist_project(project_id):
-	return TODOIST_API.get_tasks(project_id=project_id)
+	return get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
 
 
 def set_label(item_id, label_id):
-	label = TODOIST_API.get_label(label_id)
+	label = get_from_iterable(TODOIST_API.get_label(label_id))
 	TODOIST_API.update_task(item_id, labels=[label.name])
 
 
@@ -381,7 +387,7 @@ def add_not_matched_task(not_found):
 
 
 def get_tasks_by_filter(filter_name):
-	return TODOIST_API.get_tasks(filter=filter_name)
+	return get_from_iterable(TODOIST_API.get_tasks(filter=filter_name))
 
 
 def get_project_names_by_ids(project_ids):
@@ -389,7 +395,7 @@ def get_project_names_by_ids(project_ids):
 
 
 def get_rework_projects():
-	projects = TODOIST_API.get_projects()
+	projects = get_from_iterable(TODOIST_API.get_projects())
 	rework_projects = []
 	for project in projects:
 		if project.name.startswith("Book-Rework"):
@@ -401,6 +407,6 @@ check_string = "- [Link](https://cubox.cc"
 
 
 def get_cubox_rework_items() -> list:
-	tasks = TODOIST_API.get_tasks(project_id="2244725398")
+	tasks = get_from_iterable(TODOIST_API.get_tasks(project_id="2244725398"))
 	filtered_tasks = [task for task in tasks if check_string in task.content]
 	return filtered_tasks
