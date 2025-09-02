@@ -219,13 +219,13 @@ def format_travel_event_details(travel_info) -> dict:
 	traffic_info = f" ({travel_info['traffic_model']})" if travel_info["mode"] == "driving" else ""
 
 	if travel_info["mode"] == "driving":
-		title = f"Drive from '{travel_info['travel_info']['origin']}' to '{travel_info['travel_info']['destination']}'"
+		title = f"Drive to '{travel_info['travel_info']['destination']}' from '{travel_info['travel_info']['origin']}'"
 	elif travel_info["mode"] == "walking":
-		title = f"Walk from '{travel_info['travel_info']['origin']}' to '{travel_info['travel_info']['destination']}'"
+		title = f"Walk to '{travel_info['travel_info']['destination']}' from '{travel_info['travel_info']['origin']}'"
 	elif travel_info["mode"] == "bicycling":
-		title = f"Bike from '{travel_info['travel_info']['origin']}' to '{travel_info['travel_info']['destination']}'"
+		title = f"Bike to '{travel_info['travel_info']['destination']}' from '{travel_info['travel_info']['origin']}'"
 	else:
-		title = f"Travel from '{travel_info['travel_info']['origin']}' to '{travel_info['travel_info']['destination']}'"
+		title = f"Travel to '{travel_info['travel_info']['destination']}' from '{travel_info['travel_info']['origin']}'"
 
 	description = f"""
 	Travel Information:
@@ -427,8 +427,6 @@ def _create_all_travel_events(calendar_event: dict) -> list:
 			travel_events.append(travel_event)
 
 	return travel_events
-
-
 def create_travel_events_for_upcoming_calendar_events(days=1) -> list:
 	calendar_service = build_calendar_service()
 	calendar_dict = get_dict(calendar_service)
