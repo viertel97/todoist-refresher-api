@@ -25,9 +25,6 @@ logger.add(
 	diagnose=True,
 )
 
-RETHINK_PROJECT_ID = "2296630360"
-
-
 @logger.catch
 @router.post("/obsidian_random_note")
 def obsidian_random_note():

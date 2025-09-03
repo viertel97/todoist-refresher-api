@@ -42,14 +42,6 @@ from src.services.tts_service import transcribe
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
 
-TO_NOTION_LABEL_ID = "2160732004"
-TO_MICROJOURNAL_LABEL_ID = "2161901884"
-
-PROJECT_IDS = ["2300202317", "2301632406", "2302294413", "2306562514"]
-
-RETHINK_PROJECT_ID = "2296630360"
-
-
 def monica(check_for_next_day=False):
 	logger.info("start daily - monica (tomorrow)") if check_for_next_day else logger.info("start daily - monica (today)")
 

@@ -19,7 +19,7 @@ async def update_ght():
 	item = TODOIST_API.add_task(
 		content=f"{total}€ überweisen (KW {kw})",
 		description=total_text,
-		project_id="2244466904",
+		project_id="6Crcr3mXxVh6f97J",
 		labels=["Digital"],
 	)
 	update_due(item.id, due, add_reminder=True)

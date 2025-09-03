@@ -176,6 +176,8 @@ def is_multiday_event(appointment):
 def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
     if len(events) > 0:
         for event in events:
+
+
             logger.info("adding Todoist task: " + str(event))
             event_time = get_date_or_datetime(event, "end")
             if event_time.time() <= DAILY_LINKS_THRESHOLD:
@@ -195,13 +197,11 @@ def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
             description = get_description(activities)
             item = api.add_task(
                 content,
-                description=description,
-                project_id="2271705443",
+                description=description if description != "" else None,
+                project_id="6Crcr3mXxVh6f97J",
                 labels=["Digital"],
             )
             logger.info("added Todoist task: " + str(item))
-            result_move = move_item_to_project(item.id, project_id="2244725398")
-            logger.info("moved Todoist task: " + str(result_move))
             result_update_due = update_due(item.id, due=due)
             logger.info("updated Todoist task: " + str(result_update_due))
 

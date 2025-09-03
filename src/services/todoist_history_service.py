@@ -10,7 +10,7 @@ from src.services.todoist_service import HEADERS
 
 logger = setup_logging(__file__)
 
-HABITS_PROJECT_ID = str(2244708745)
+HABITS_PROJECT_ID = "6Crcr3mXxHJC2cRQ"
 HABITS = get_habits_from_web()
 habit_list = [x["name"] for x in HABITS]
 

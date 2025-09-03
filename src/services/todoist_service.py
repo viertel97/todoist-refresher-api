@@ -36,11 +36,10 @@ PROJECT_LIST = [
 	"IN 5-8 WEEKS",
 	"LONG-TERM | ON HOLD",
 ]
-HABITS_PROJECT_ID = "2244708745"
-DAILY_SECTION_ID = "18496174"
+DAILY_SECTION_ID = "63g8vW6fXwhQP3Vx"
 
-THIS_WEEK_PROJECT_ID = "2244725398"
-NEXT_WEEK_PROJECT_ID = "2244725594"
+THIS_WEEK_PROJECT_ID = "6Crcr3mXxVh6f97J"
+NEXT_WEEK_PROJECT_ID = "6Crcr3mXxj9c98w6"
 
 PROJECT_DICT = {
 	"THIS WEEK": [],
@@ -51,24 +50,18 @@ PROJECT_DICT = {
 }
 
 TO_TPT_DONE_LABEL_ID = "2160732007"
-TPT_DONE_SECTION_ID = "100014109"
+TPT_DONE_SECTION_ID = "66p5R3PWgVJ4QmmJ"
 
-TO_MM_LABEL_ID = "2170899508"
 TO_MM_DONE_LABEL_ID = "2171093939"
 
 TO_MICROJOURNAL_DONE_LABEL_ID = "2161902457"
-MICROJOURNAL_DONE_SECTION_ID = "100014120"
+MICROJOURNAL_DONE_SECTION_ID = "66p5f4GRVmxXFr2J"
 
 TO_WORK_DONE_LABEL_ID = "2168502868"
-TO_WORK_DONE_SECTION_ID = "132700483"
+TO_WORK_DONE_SECTION_ID = "69MhcF3pw3mJcrgr"
 
-STORAGE_PROJECT_ID = "2298105794"
 
-RETHINK_PROJECT_ID = "2296630360"
-TO_RETHINK_DONE_LABEL_ID = "2163807453"
-
-OBSIDIAN_REWORK_PROJECT_ID = "2304525222"
-
+OBSIDIAN_REWORK_PROJECT_ID = "6RRHRWmrQCvCVjJv"
 
 def get_from_iterable(iterable):
     return list(chain.from_iterable(iterable))
@@ -183,8 +176,8 @@ def generate_reminders(item, due):
 	due = {"string": new_date.strftime("%d.%m.%Y")}
 	item = TODOIST_API.add_task(
 		"Neuen Paper auf eBook Reader laden",
-		project_id=2244466904,
-		due_string=due,
+		project_id="6Crcr3mXxVh6f97J",
+		due_string=new_date.strftime("%d.%m.%Y"),
 		labels=["Digital"],
 	)
 	add_reminder(item.id, due)
@@ -229,13 +222,6 @@ def get_items_by_todoist_label(label_id):
     return get_from_iterable(get_items_by_label(label_id=label_id))
 
 
-def get_items_by_content(content_list):
-	tasks = get_from_iterable(TODOIST_API.get_tasks())
-	result = [task for task in tasks if any(content in task.content for content in content_list)]
-	result = [task for task in result if not any(label in task.labels for label in ["To-Rethink-Done"])]
-	return result
-
-
 def complete_task(item):
 	TODOIST_API.close_task(task_id=item.id)
 
@@ -251,8 +237,6 @@ def set_done_label(item, label):
 		set_label(item.id, label_id=TO_MM_DONE_LABEL_ID)
 	elif label == "Work":
 		set_label(item.id, label_id=TO_WORK_DONE_LABEL_ID)
-	elif label == "Rethink":
-		set_label(item.id, label_id=TO_RETHINK_DONE_LABEL_ID)
 	elif label == "Microjournal":
 		set_label(item.id, label_id=TO_MICROJOURNAL_DONE_LABEL_ID)
 	else:
@@ -267,38 +251,12 @@ def move_item_to_microjournal_done(item):
 	move_item_to_section(item.id, section_id=MICROJOURNAL_DONE_SECTION_ID)
 
 
-def move_item_to_rethink(item):
-	move_item_to_project(item.id, project_id=RETHINK_PROJECT_ID)
-
-
-# 2. Value is the offset
-supplements = {
-	"Gold Omega 3 D3+K2 Sport Edition - Olimp": [60, 155],
-	"Zinc Citrate Health Line - GN Laboratories": [120 * 2, 340],
-}
-time_to_order = 10
-
-
 def run_todoist_sync_commands(commands):
 	for command in commands:
 		command["uuid"] = str(uuid.uuid4())
 		if not command.get("temp_id"):
 			command["temp_id"] = str(uuid.uuid4())
 	return run_sync_commands(commands)
-
-
-def check_order_supplements(df):
-	used_this_year = df["properties~Supplements~checkbox"].value_counts().to_dict()[True]
-	for key in supplements:
-		logger.info(f"if ({used_this_year}-{supplements[key][1]}) % ({supplements[key][0]} - {time_to_order}) == 0")
-
-		if (used_this_year - supplements[key][1]) % supplements[key][0] - time_to_order == 0:
-			TODOIST_API.add_task(
-				key + " bestellen",
-				project_id="2244725398",
-				due_string="tomorrow",
-				labels=["Digital"],
-			)
 
 
 def add_after_vacation_tasks():
@@ -324,20 +282,13 @@ def update_task_due(item, due):
 	update_due(item.id, due)
 
 
-def get_todoist_activity(**kwargs):
-	logger.info(f"Getting Todoist activity with kwargs: {kwargs}")
-	activitiy = get_activity(**kwargs)
-	# logger.info("Got Todoist activity: {}".format(activitiy))
-	return activitiy
-
-
 def check_if_last_item(book_title, items):
 	for item in items:
 		if item["book"] == book_title:
 			return
 	TODOIST_API.add_task(
 		f"Buch-Notizen zusammenfassen - {book_title} - Obsidian-Eintrag überdenken",
-		project_id="2300202317",
+		project_id="6Crcr3mXxVh6f97J",
 		due_string="tomorrow",
 		labels=["Digital"],
 	)
@@ -367,31 +318,8 @@ def add_obsidian_task_for_activity(file_name, description=None):
 	return task
 
 
-def update_obsidian_task(item):
-	new_content = f"{item.content} §§§ Obsidian-Notiz überarbeiten"
-	task = TODOIST_API.update_task(item.id, content=new_content, due_string="tomorrow")
-	return task
-
-
 def add_todoist_task(*args, **kwargs):
 	return TODOIST_API.add_task(*args, **kwargs)
-
-
-def add_not_matched_task(not_found):
-	TODOIST_API.add_task(
-		"Nicht-Gematchte Kategorien updaten",
-		description=not_found,
-		project_id="2244708745",
-		due_string="today 19:30",
-	)
-
-
-def get_tasks_by_filter(filter_name):
-	return get_from_iterable(TODOIST_API.get_tasks(filter=filter_name))
-
-
-def get_project_names_by_ids(project_ids):
-	return [TODOIST_API.get_project(project_id).name for project_id in project_ids]
 
 
 def get_rework_projects():
