@@ -433,6 +433,11 @@ def create_travel_events_for_upcoming_calendar_events(days=1) -> list:
 
 	event_list = []
 	event_list.extend(get_events_from_calendar_for_days("Janik's Kalender", calendar_dict, calendar_service, days))
-	with_locations = [x for x in event_list if "location" in x and x["location"]]
+	with_locations = [x for x in event_list if
+	                  "location" in x and
+	                  x["location"] and
+	                  "#skip-distance" not in x.get("description", "").lower() and
+	                  "online" not in x.get("location", "").lower()
+	                  ]
 
 	return process_calendar_events_with_travel(with_locations)
