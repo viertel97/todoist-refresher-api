@@ -36,22 +36,6 @@ creds = None
 DEBUG = os.name == "nt"
 
 
-def get_events():
-    calendar_service = build_calendar_service()
-
-    calendar_dict = get_dict(calendar_service)
-
-    event_list = []
-
-    event_list.extend(get_events_from_calendar("Janik's Kalender", calendar_dict, calendar_service))
-    event_list.extend(get_events_from_calendar("Drug-Kalender", calendar_dict, calendar_service))
-    event_list.extend(get_events_from_calendar("Reisen", calendar_dict, calendar_service))
-    event_list.extend(get_events_from_calendar("Veranstaltungen", calendar_dict, calendar_service))
-    event_list.extend(get_events_from_calendar("♥", calendar_dict, calendar_service))
-
-    return event_list
-
-
 def get_events_from_calendar_for_days(calendar_name, calendar_dict, calendar_service, days=0):
     event_list = []
     page_token = None
@@ -90,6 +74,7 @@ def get_events_for_days(days=2):
     event_list.extend(get_events_from_calendar_for_days("Reisen", calendar_dict, calendar_service, days))
     event_list.extend(get_events_from_calendar_for_days("Veranstaltungen", calendar_dict, calendar_service, days))
     event_list.extend(get_events_from_calendar_for_days("♥", calendar_dict, calendar_service, days))
+    event_list.extend(get_events_from_calendar_for_days("Systemischer Berater", calendar_dict, calendar_service, days))
 
     return event_list
 

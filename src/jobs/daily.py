@@ -18,8 +18,6 @@ from src.services.monica_database_service import add_monica_activities, update_a
 from src.services.monica_service import (
 	add_tasks,
 	get_activities,
-	get_call_events,
-	get_events,
 	get_events_for_days,
 	was_at_day,
 )
