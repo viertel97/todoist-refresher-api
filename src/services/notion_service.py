@@ -470,6 +470,8 @@ def get_drugs_from_activity(row, drug_date_dict):
 	result_properties = [result_properties[key] for key in result_properties.keys() if key not in UNWANTED_COLUMNS]
 	drug_date_dict[happened_at] = []
 	for prop in result_properties:
+		if "multi_select" not in prop.keys():
+			continue
 		multi_select = prop["multi_select"]
 		for multi_select_item in multi_select:
 			drug_date_dict[happened_at].append(multi_select_item["name"])
