@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date, time
 
 import pandas as pd
 from dateutil import parser
@@ -80,9 +80,19 @@ def get_default_offset():
 	return delta, tz_info["gmt_string"]
 
 
+
+
 def get_data():
-	df_items = pd.DataFrame(item.__dict__ for item in get_from_iterable(TODOIST_API.get_tasks()))
 	df_projects = pd.DataFrame(item.__dict__ for item in get_from_iterable(TODOIST_API.get_projects()))
+
+	selected_project_ids = df_projects[df_projects.name.isin(PROJECT_LIST)].id.tolist()
+
+	item_list = []
+	for project_id in selected_project_ids:
+		items = get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
+		item_list.extend(items)
+	df_items = pd.DataFrame(item.__dict__ for item in item_list)
+
 
 	df_projects = df_projects[df_projects.name.isin(PROJECT_LIST)]
 	df_items_due = df_items.loc[~df_items.due.isna()]
@@ -96,7 +106,13 @@ def get_data():
 
 def check_due(task_id, due, project_id, week_list, df_projects, project_dict):
 	# check if year is the same
-	due_date = parser.parse(due.date)
+	# check if due is Datetime
+	if isinstance(due.date, datetime):
+		due_date = due.date
+	elif isinstance(due.date, date):
+		due_date = datetime.combine(due.date, time())
+	else:
+		due_date = parser.parse(due.date)
 
 	# check if due_date is in past
 	if due_date <= datetime.today():
@@ -223,7 +239,7 @@ def get_items_by_todoist_label(label_id):
 
 
 def complete_task(item):
-	TODOIST_API.close_task(task_id=item.id)
+	TODOIST_API.complete_task(task_id=item.id)
 
 
 def move_item_to_notion_done(item):
@@ -274,7 +290,7 @@ def get_items_by_todoist_project(project_id):
 
 
 def set_label(item_id, label_id):
-	label = get_from_iterable(TODOIST_API.get_label(label_id))
+	label = TODOIST_API.get_label(label_id)
 	TODOIST_API.update_task(item_id, labels=[label.name])
 
 
