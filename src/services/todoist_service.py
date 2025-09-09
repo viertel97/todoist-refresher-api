@@ -351,6 +351,6 @@ check_string = "- [Link](https://cubox.cc"
 
 
 def get_cubox_rework_items() -> list:
-	tasks = get_from_iterable(TODOIST_API.get_tasks(project_id="2244725398"))
+	tasks = get_from_iterable(TODOIST_API.get_tasks(project_id=THIS_WEEK_PROJECT_ID))
 	filtered_tasks = [task for task in tasks if check_string in task.content]
 	return filtered_tasks
