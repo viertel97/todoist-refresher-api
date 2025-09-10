@@ -310,6 +310,13 @@ def create_travel_calendar_event(event):
 			"title": "Google Maps directions",
 			"url": event["maps_url"],
 		},
+		"reminders": {
+			"useDefault": False,
+			"overrides": [
+				{"method": "popup", "minutes": 0},  # Reminder at departure time
+			],
+		},
+		"colorId": "3" # https://i.sstatic.net/YSMrI.png
 	}
 
 	event = calendar_service.events().insert(calendarId="primary", body=calendar_event).execute()
