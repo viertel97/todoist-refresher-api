@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
 from quarter_lib.logging import setup_logging
 
 from src.helper.config_helper import get_value
@@ -40,13 +40,13 @@ from src.services.tts_service import transcribe
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
 
-def monica(check_for_next_day=False):
+def monica(check_for_next_day=False, days = 0):
 	logger.info("start daily - monica (tomorrow)") if check_for_next_day else logger.info("start daily - monica (today)")
 
-	activities = get_activities(0)
+	activities = get_activities(days)
 
 	events = get_events_for_days()
-	events_today, _ = was_at_day(events, 0, check_for_next_day)
+	events_today, _ = was_at_day(events, days, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
 	events_today = [event for event in events_today if filter_event(event["summary"])]
 	if len(events_today) > 0:
@@ -62,9 +62,10 @@ def monica(check_for_next_day=False):
 
 @logger.catch
 @router.post("/monica-morning")
-def monica_morning():
-	return monica(check_for_next_day=False)
-
+def monica_morning(
+	days: int = Query(0, title="Days", description="Number of days to look ahead / back")
+):
+	return monica(check_for_next_day=False, days=days)
 
 @logger.catch
 @router.post("/monica-evening")
