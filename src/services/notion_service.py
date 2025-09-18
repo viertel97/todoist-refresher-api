@@ -562,3 +562,22 @@ def stretch_project_tasks(database_id):
 			logger.info(f"updated {index + 1} rows")
 		time.sleep(1)
 	logger.info("Done updating database with id " + database_id)
+
+
+def stretch_databases(database_id, order_field="properties~Priority~number"):
+	logger.info("stretching database with id " + database_id)
+	df = get_database(database_id)
+	logger.info("got database with id " + database_id)
+	df["title"] = df["properties~Name~title"].apply(lambda x: x[0]["plain_text"])
+	df.drop(columns=["properties~Name~title"], inplace=True)
+	df.sort_values(by=order_field, inplace=True)
+	df.reset_index(drop=True, inplace=True)
+	logger.info("filtered & starting to update with id " + database_id)
+	for index, row in df.iterrows():
+		update_priority(df.iloc[index]["id"], index + 1, df.iloc[index]["title"])
+		if (index + 1) % 10 == 0:
+			logger.info(f"updated {index + 1} rows")
+		if (index + 1) % 30 == 0:
+			logger.info(f"updated {index + 1} rows")
+		time.sleep(1)
+	logger.info("Done updating database with id " + database_id)

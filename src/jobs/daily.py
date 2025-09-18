@@ -31,7 +31,7 @@ from src.services.notion_service import (
 	stretch_project_tasks,
 	update_habit_tracker_vacation_mode,
 	update_notion_habit_tracker,
-	update_notion_page_checkbox,
+	update_notion_page_checkbox, stretch_databases,
 )
 from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
 from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
@@ -130,6 +130,14 @@ def stretch_tpt():
 	database_id = "b3042bf44bd14f40b0167764a0107c2f"
 	stretch_project_tasks(database_id)
 	logger.info("end daily - stretch tpt")
+
+@logger.catch
+@router.post("/stretch_lists")
+def stretch_lists():
+	logger.info("start daily - stretch lists")
+	stretch_databases("ccf13accb1124856b6092fd37614144b")
+	logger.info("end daily - stretch lists")
+
 
 
 @logger.catch
