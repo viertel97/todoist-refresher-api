@@ -11,7 +11,7 @@ import pymysql.cursors
 from github import UnknownObjectException
 from loguru import logger
 
-from src.config.queries import activity_query
+from src.config.queries import activity_query, shortened_activity_query
 from src.helper.database_helper import close_server_connection, create_server_connection
 from src.helper.date_helper import get_date_or_datetime
 from src.services.github_service import create_obsidian_markdown_in_git, get_files
@@ -75,6 +75,7 @@ def generate_content(appointment: dict, start: datetime, end: datetime, created:
 
 def add_monica_activities(event_dict_list: list[dict]):
 	connection = create_server_connection("monica")
+	created_activities = []
 	for event in event_dict_list:
 		try:
 			timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -105,7 +106,11 @@ def add_monica_activities(event_dict_list: list[dict]):
 					activities_values,
 				)
 				connection.commit()
+				# get the last inserted row
 				last_row_id = cursor.lastrowid
+				query = shortened_activity_query.format(activity_id=last_row_id)
+				cursor.execute(query)
+				last_row = cursor.fetchone()
 
 				activity_contact_values = tuple((last_row_id, INBOX_CONTACT_ID, DEFAULT_ACCOUNT_ID))
 				cursor.execute(
@@ -114,10 +119,12 @@ def add_monica_activities(event_dict_list: list[dict]):
 				)
 				connection.commit()
 				logger.info(f"Activity with id {last_row_id} was added")
+				created_activities.append(last_row)
 		except pymysql.err.IntegrityError as e:
 			logger.error(f"IntegrityError: {e}")
 			continue
 	close_server_connection(connection)
+	return created_activities
 
 
 def get_inbox_activities_to_clean():

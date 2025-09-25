@@ -3,7 +3,9 @@ import re
 from datetime import datetime, timedelta
 from typing import Annotated
 
+from dateutil.relativedelta import relativedelta
 from fastapi import APIRouter, Path, Query
+from github import UnknownObjectException
 from quarter_lib.logging import setup_logging
 
 from src.helper.config_helper import get_value
@@ -12,6 +14,7 @@ from src.helper.path_helper import slugify
 from src.helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
 from src.services.cubox_service import add_cubox_annotations_to_obsidian, add_cubox_reading_task_to_todoist
 from src.services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
+from src.services.github_service import create_obsidian_markdown_in_git, get_files
 from src.services.google_service import create_travel_events_for_upcoming_calendar_events
 from src.services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from src.services.monica_database_service import add_monica_activities, update_archive
@@ -40,8 +43,23 @@ from src.services.tts_service import transcribe
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
 
-def monica(check_for_next_day=False, days = 0):
+async def monica(check_for_next_day=False, days = 0):
 	logger.info("start daily - monica (tomorrow)") if check_for_next_day else logger.info("start daily - monica (today)")
+
+
+	if not check_for_next_day:
+		timestamp = datetime.now()
+
+		try:
+			files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
+		except UnknownObjectException as e: # folder for month not created yet
+			logger.error(f"UnknownObjectException: {e}")
+			files_in_repo = []
+		files_in_repo.extend(
+			get_files(
+				f"0300_Spaces/Social Circle/Activities/{(timestamp - relativedelta(months=1)).year!s}/{(timestamp - relativedelta(months=1)).strftime('%m-%B')!s}"
+			)
+		)
 
 	activities = get_activities(days)
 
@@ -53,7 +71,10 @@ def monica(check_for_next_day=False, days = 0):
 		# TODO: add matched schema so afterwards we can also add
 		#  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
 		add_tasks(TODOIST_API, events_today, activities)
-		add_monica_activities(events_today)
+		created_activities = add_monica_activities(events_today)
+	#   if not check_for_next_day:
+	#		for row in created_activities:
+	#			await create_obsidian_markdown_in_git(row, run_timestamp=timestamp, drug_date_dict={}, files_in_repo=files_in_repo)
 
 	logger.info("end daily - monica (tomorrow)") if check_for_next_day else logger.info("end daily - monica (today)")
 
@@ -62,15 +83,15 @@ def monica(check_for_next_day=False, days = 0):
 
 @logger.catch
 @router.post("/monica-morning")
-def monica_morning(
+async def monica_morning(
 	days: int = Query(0, title="Days", description="Number of days to look ahead / back")
 ):
-	return monica(check_for_next_day=False, days=days)
+	return await monica(check_for_next_day=False, days=days)
 
 @logger.catch
 @router.post("/monica-evening")
-def monica_evening():
-	return monica(check_for_next_day=True)
+async def monica_evening():
+	return await monica(check_for_next_day=True)
 
 @logger.catch
 @router.post("/distance-events")
