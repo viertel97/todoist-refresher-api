@@ -1,10 +1,9 @@
 import copy
 import re
 from datetime import datetime, timedelta
-from typing import Annotated
 
 from dateutil.relativedelta import relativedelta
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Query
 from github import UnknownObjectException
 from quarter_lib.logging import setup_logging
 
@@ -14,7 +13,7 @@ from src.helper.path_helper import slugify
 from src.helper.web_helper import get_categories_data_from_web, save_categories_data_to_web
 from src.services.cubox_service import add_cubox_annotations_to_obsidian, add_cubox_reading_task_to_todoist
 from src.services.database_service import add_or_update_row_koreader_book, add_or_update_row_koreader_page_stat
-from src.services.github_service import create_obsidian_markdown_in_git, get_files
+from src.services.github_service import get_files
 from src.services.google_service import create_travel_events_for_upcoming_calendar_events
 from src.services.microsoft_service import get_koreader_settings, upload_transcribed_article_to_onedrive
 from src.services.monica_database_service import add_monica_activities, update_archive
@@ -34,25 +33,26 @@ from src.services.notion_service import (
 	stretch_project_tasks,
 	update_habit_tracker_vacation_mode,
 	update_notion_habit_tracker,
-	update_notion_page_checkbox, stretch_databases,
+	update_notion_page_checkbox,
+	stretch_databases,
 )
 from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
-from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, add_before_tasks, get_vacation_mode
+from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, get_vacation_mode
 from src.services.tts_service import transcribe
 
 logger = setup_logging(__file__)
 router = APIRouter(prefix="/daily", tags=["daily"])
 
-async def monica(check_for_next_day=False, days = 0):
-	logger.info("start daily - monica (tomorrow)") if check_for_next_day else logger.info("start daily - monica (today)")
 
+async def monica(check_for_next_day=False, days=0):
+	logger.info("start daily - monica (tomorrow)") if check_for_next_day else logger.info("start daily - monica (today)")
 
 	if not check_for_next_day:
 		timestamp = datetime.now()
 
 		try:
 			files_in_repo = get_files(f"0300_Spaces/Social Circle/Activities/{timestamp.year!s}/{timestamp.strftime('%m-%B')!s}")
-		except UnknownObjectException as e: # folder for month not created yet
+		except UnknownObjectException as e:  # folder for month not created yet
 			logger.error(f"UnknownObjectException: {e}")
 			files_in_repo = []
 		files_in_repo.extend(
@@ -73,8 +73,8 @@ async def monica(check_for_next_day=False, days = 0):
 		add_tasks(TODOIST_API, events_today, activities)
 		created_activities = add_monica_activities(events_today)
 	#   if not check_for_next_day:
-	#		for row in created_activities:
-	#			await create_obsidian_markdown_in_git(row, run_timestamp=timestamp, drug_date_dict={}, files_in_repo=files_in_repo)
+	# for row in created_activities:
+	# await create_obsidian_markdown_in_git(row, run_timestamp=timestamp, drug_date_dict={}, files_in_repo=files_in_repo)
 
 	logger.info("end daily - monica (tomorrow)") if check_for_next_day else logger.info("end daily - monica (today)")
 
@@ -83,21 +83,21 @@ async def monica(check_for_next_day=False, days = 0):
 
 @logger.catch
 @router.post("/monica-morning")
-async def monica_morning(
-	days: int = Query(0, title="Days", description="Number of days to look ahead / back")
-):
+async def monica_morning(days: int = Query(0, title="Days", description="Number of days to look ahead / back")):
 	return await monica(check_for_next_day=False, days=days)
+
 
 @logger.catch
 @router.post("/monica-evening")
 async def monica_evening():
 	return await monica(check_for_next_day=True)
 
+
 @logger.catch
 @router.post("/distance-events")
-def distance_events():
+def distance_events(days: int = Query(1, title="Days", description="Number of days to look ahead / back")):
 	logger.info("start distance_events")
-	created_events = create_travel_events_for_upcoming_calendar_events()
+	created_events = create_travel_events_for_upcoming_calendar_events(days=days)
 	logger.info("end distance_events")
 	return created_events
 
@@ -152,13 +152,13 @@ def stretch_tpt():
 	stretch_project_tasks(database_id)
 	logger.info("end daily - stretch tpt")
 
+
 @logger.catch
 @router.post("/stretch_lists")
 def stretch_lists():
 	logger.info("start daily - stretch lists")
 	stretch_databases("ccf13accb1124856b6092fd37614144b")
 	logger.info("end daily - stretch lists")
-
 
 
 @logger.catch
@@ -185,6 +185,7 @@ def links():
 	get_random_from_notion_link_list(link_list_database)
 
 	logger.info("end daily - links")
+
 
 filter_list = ["K"]
 filter_list_in = ["Drive from", "Buchungsschnitt"]

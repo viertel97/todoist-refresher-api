@@ -1,12 +1,12 @@
 repos:
  # PDM (Ensure the correct env)
-- repo: local
-  hooks:
-    - id: pdm-install
-      name: pdm install
-      entry: pdm install
-      language: system
-      pass_filenames: false
+#- repo: local
+#  hooks:
+#    - id: pdm-install
+#      name: pdm install
+#      entry: pdm install
+#      language: system
+#      pass_filenames: false
 
 # commit message
 - repo: https://github.com/compilerla/conventional-pre-commit

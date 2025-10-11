@@ -7,11 +7,14 @@ from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.google_calendar import build_calendar_service, get_dict
 from quarter_lib.logging import setup_logging
+
+from src.helper.web_helper import get_distance_entries_from_web
 from src.services.monica_service import get_events_from_calendar_for_days
 
 MAPS_API_KEY, HOME_ADDRESS = get_secrets(["google/maps_api_key", "google/home_address"])
 
 logger = setup_logging(__name__)
+
 
 def calculate_travel_time(origin, destination, departure_time=None, mode="driving", traffic_model="best_guess"):
 	"""
@@ -92,7 +95,8 @@ def calculate_travel_time(origin, destination, departure_time=None, mode="drivin
 		raise Exception(f"Unexpected API response format: {e}")
 
 
-def get_travel_start_time(destination, event_start_time, origin="current_location", buffer_minutes=10, mode="driving", traffic_model="pessimistic"
+def get_travel_start_time(
+	destination, event_start_time, origin="current_location", buffer_minutes=10, mode="driving", traffic_model="pessimistic"
 ):
 	"""
 	Calculate when to leave to arrive at destination by a specific time
@@ -171,11 +175,7 @@ def create_travel_events(travel_type, destination, event_start_time, origin="cur
 			return {"driving": driving_info}
 		case "bicycling":
 			bicycle_info = get_travel_start_time(
-				destination=destination,
-				event_start_time=event_start_time,
-				origin=origin,
-				buffer_minutes=walking_buffer,
-				mode=travel_type
+				destination=destination, event_start_time=event_start_time, origin=origin, buffer_minutes=walking_buffer, mode=travel_type
 			)
 			return {"bicycling": bicycle_info}
 		case None:
@@ -204,6 +204,7 @@ def create_travel_events(travel_type, destination, event_start_time, origin="cur
 			)
 
 			return {"walking": walking_info, "driving": driving_info, "bicycling": bicycle_info}
+
 
 def format_travel_event_details(travel_info) -> dict:
 	"""
@@ -294,6 +295,7 @@ def create_departure_maps_url(origin, destination, depart_at=None, arrival_time=
 
 	return url
 
+
 def create_travel_calendar_event(event):
 	calendar_service = build_calendar_service()
 
@@ -316,19 +318,20 @@ def create_travel_calendar_event(event):
 				{"method": "popup", "minutes": 0},  # Reminder at departure time
 			],
 		},
-		"colorId": "3" # https://i.sstatic.net/YSMrI.png
+		"colorId": "3",  # https://i.sstatic.net/YSMrI.png
 	}
 
 	event = calendar_service.events().insert(calendarId="primary", body=calendar_event).execute()
 	logger.info("Event created: %s" % (event.get("htmlLink")))
 
 
-def process_calendar_events_with_travel(with_locations) -> list:
+def process_calendar_events_with_travel(with_locations, default_locations: dict) -> list:
 	"""
 	Process calendar events and create travel events for each
 
 	Args:
 		with_locations (list): List of calendar events with location information
+		default_locations (dict): Predefined locations for travel type matching
 
 	Returns:
 		list: List of created travel events
@@ -337,16 +340,17 @@ def process_calendar_events_with_travel(with_locations) -> list:
 	for calendar_event in with_locations:
 		if calendar_event.get("location"):
 			description = calendar_event.get("description", "")
+			location = calendar_event.get("location")
 
-			# Determine travel type from tags in description
-			travel_type = _extract_travel_type_from_description(description)
+			# check in default locations if the event location matches any predefined locations
+			travel_type = next((k for k, v in default_locations.items() if any(s.lower() in location.lower() for s in v)), None)
+
+			if not travel_type:
+				travel_type = _extract_travel_type_from_description(description)
 
 			if travel_type:
 				# Create single specific travel event
-				travel_event = _create_single_travel_event(
-					calendar_event=calendar_event,
-					travel_type=travel_type
-				)
+				travel_event = _create_single_travel_event(calendar_event=calendar_event, travel_type=travel_type)
 
 				if travel_event:
 					create_travel_calendar_event(travel_event)
@@ -434,17 +438,23 @@ def _create_all_travel_events(calendar_event: dict) -> list:
 			travel_events.append(travel_event)
 
 	return travel_events
+
+
 def create_travel_events_for_upcoming_calendar_events(days=1) -> list:
 	calendar_service = build_calendar_service()
 	calendar_dict = get_dict(calendar_service)
 
+	default_locations = get_distance_entries_from_web()
+
 	event_list = []
 	event_list.extend(get_events_from_calendar_for_days("Janik's Kalender", calendar_dict, calendar_service, days))
-	with_locations = [x for x in event_list if
-	                  "location" in x and
-	                  x["location"] and
-	                  "#skip-distance" not in x.get("description", "").lower() and
-	                  "online" not in x.get("location", "").lower()
-	                  ]
+	with_locations = [
+		x
+		for x in event_list
+		if "location" in x
+		and x["location"]
+		and "#skip-distance" not in x.get("description", "").lower()
+		and "online" not in x.get("location", "").lower()
+	]
 
-	return process_calendar_events_with_travel(with_locations)
+	return process_calendar_events_with_travel(with_locations, default_locations)
