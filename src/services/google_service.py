@@ -340,6 +340,11 @@ def process_calendar_events_with_travel(with_locations, default_locations: dict)
 	for calendar_event in with_locations:
 		if calendar_event.get("location"):
 			description = calendar_event.get("description", "")
+
+			if "travel information:" in description.lower():
+				# Skip events that are already travel events
+				continue
+
 			location = calendar_event.get("location")
 
 			# check in default locations if the event location matches any predefined locations
