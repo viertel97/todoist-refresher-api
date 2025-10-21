@@ -7,15 +7,13 @@ from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from quarter_lib.todoist import (
 	add_reminder,
-	get_activity,
-	get_items_by_label,
 	get_user_karma_vacation,
 	get_user_state,
 	move_item_to_project,
 	move_item_to_section,
 	update_due,
 	run_sync_commands,
-    create_headers
+	create_headers
 )
 from todoist_api_python.api import TodoistAPI
 
@@ -49,22 +47,22 @@ PROJECT_DICT = {
 	"LONG-TERM | ON HOLD": [],
 }
 
-TO_TPT_DONE_LABEL_ID = "2160732007"
+TO_TPT_DONE_LABEL_NAME = "To-TPT-Done"
 TPT_DONE_SECTION_ID = "66p5R3PWgVJ4QmmJ"
 
 TO_MM_DONE_LABEL_ID = "2171093939"
 
-TO_MICROJOURNAL_DONE_LABEL_ID = "2161902457"
+TO_MICROJOURNAL_DONE_LABEL_NAME = "To-Microjournal-Done"
 MICROJOURNAL_DONE_SECTION_ID = "66p5f4GRVmxXFr2J"
 
-TO_WORK_DONE_LABEL_ID = "2168502868"
+TO_WORK_DONE_LABEL_NAME = "To-Work-Done"
 TO_WORK_DONE_SECTION_ID = "69MhcF3pw3mJcrgr"
 
 
 OBSIDIAN_REWORK_PROJECT_ID = "6RRHRWmrQCvCVjJv"
 
 def get_from_iterable(iterable):
-    return list(chain.from_iterable(iterable))
+	return list(chain.from_iterable(iterable))
 
 
 def get_projects():
@@ -131,6 +129,7 @@ def check_due(task_id, due, project_id, week_list, df_projects, project_dict):
 		if week_list[3] <= due_date_week <= week_list[3] + 3:
 			return check_and_add(project_id, task_id, 3, df_projects, project_dict)
 	check_and_add(project_id, task_id, 4, df_projects, project_dict)
+	return None
 
 
 def check_and_add(project_id, task_id, index, df_projects, project_dict):
@@ -234,8 +233,8 @@ def get_vacation_mode():
 	return bool(get_user_karma_vacation())
 
 
-def get_items_by_todoist_label(label_id):
-    return get_from_iterable(get_items_by_label(label_id=label_id))
+def get_items_by_todoist_label(label_name):
+	return get_from_iterable(TODOIST_API.get_tasks(label=label_name))
 
 
 def complete_task(item):
@@ -243,18 +242,18 @@ def complete_task(item):
 
 
 def move_item_to_notion_done(item):
-	move_item_to_section(item.id, section_id=TPT_DONE_SECTION_ID)
+	TODOIST_API.move_task(task_id=item.id, section_id=TPT_DONE_SECTION_ID)
 
 
 def set_done_label(item, label):
 	if label == "TPT":
-		set_label(item.id, label_id=TO_TPT_DONE_LABEL_ID)
+		TODOIST_API.update_task(task_id=item.id, labels=[TO_TPT_DONE_LABEL_NAME])
 	elif label == "MM":
-		set_label(item.id, label_id=TO_MM_DONE_LABEL_ID)
+		TODOIST_API.update_task(task_id=item.id, labels=[TO_MM_DONE_LABEL_ID])
 	elif label == "Work":
-		set_label(item.id, label_id=TO_WORK_DONE_LABEL_ID)
+		TODOIST_API.update_task(task_id=item.id, labels=[TO_WORK_DONE_LABEL_NAME])
 	elif label == "Microjournal":
-		set_label(item.id, label_id=TO_MICROJOURNAL_DONE_LABEL_ID)
+		TODOIST_API.update_task(task_id=item.id, labels=[TO_MICROJOURNAL_DONE_LABEL_NAME])
 	else:
 		logger.error("set-done label not found")
 
@@ -289,13 +288,8 @@ def get_items_by_todoist_project(project_id):
 	return get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
 
 
-def set_label(item_id, label_id):
-	label = TODOIST_API.get_label(label_id)
-	TODOIST_API.update_task(item_id, labels=[label.name])
-
-
 def update_task_due(item, due):
-	update_due(item.id, due)
+	TODOIST_API.update_task(task_id=item.id, due_date=due)
 
 
 def check_if_last_item(book_title, items):

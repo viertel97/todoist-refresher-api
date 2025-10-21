@@ -40,19 +40,19 @@ tags_metadata = [
 ]
 router = APIRouter(prefix="/hourly", tags=["hourly"])
 
-TO_TPT_LABEL_ID = "2160732004"
-TO_MM_LABEL_ID = "2170899508"
-TO_WISHLIST_LABEL_ID = "2178299680"
+TO_TPT_LABEL_NAME = "To-TPT"
+TO_MM_LABEL_NAME = "To-MM"
+TO_WISHLIST_LABEL_NAME = "To-Wishlist"
 
-TO_MICROJOURNAL_LABEL_ID = "2161901884"
-TO_WORK_LABEL_ID = "2168502713"
+TO_MICROJOURNAL_LABEL_NAME = "To-Microjournal"
+TO_WORK_LABEL_NAME = "To-Work"
 
 
 @logger.catch
 @router.post("/todoist_to_notion_routine")
 def todoist_to_tpt_routine():
 	logger.info("start - hourly todoist to tpt routine")
-	list_to_move = get_items_by_todoist_label(TO_TPT_LABEL_ID)
+	list_to_move = get_items_by_todoist_label(TO_TPT_LABEL_NAME)
 	logger.info(f"number of items to move from Todoist to Notion - TPT: {len(list_to_move)!s}")
 	tech_database = get_value("tech", "name", DATABASES)["id"]
 	for item_to_move in list_to_move:
@@ -67,7 +67,7 @@ def todoist_to_tpt_routine():
 @router.post("/todoist_to_microjournal_routine")
 def todoist_to_microjournal_routine():
 	logger.info("start - hourly todoist to microjournal routine")
-	list_to_move = get_items_by_todoist_label(TO_MICROJOURNAL_LABEL_ID)
+	list_to_move = get_items_by_todoist_label(TO_MICROJOURNAL_LABEL_NAME)
 	logger.info(f"number of items to move from Todoist to Microjournal: {len(list_to_move)!s}")
 	if len(list_to_move) > 0:
 		# add_to_monica_microjournal(list_to_move)
@@ -83,7 +83,7 @@ def todoist_to_microjournal_routine():
 @router.post("/todoist_to_work_routine")
 def todoist_to_work_routine():
 	logger.info("start - hourly todoist to work-inbox routine")
-	list_to_move = get_items_by_todoist_label(TO_WORK_LABEL_ID)
+	list_to_move = get_items_by_todoist_label(TO_WORK_LABEL_NAME)
 	logger.info(f"number of items to move from Todoist to Work: {len(list_to_move)!s}")
 	if len(list_to_move) > 0:
 		add_to_work_inbox(list_to_move)
@@ -97,7 +97,7 @@ def todoist_to_work_routine():
 @router.post("/todoist_to_mm_routine")
 def todoist_to_mm_routine():
 	logger.info("start - hourly todoist to mm routine")
-	list_to_move = get_items_by_todoist_label(TO_MM_LABEL_ID)
+	list_to_move = get_items_by_todoist_label(TO_MM_LABEL_NAME)
 	logger.info(f"number of items to move from Todoist to Notion - MM: {len(list_to_move)!s}")
 	mm_database = get_value("mindfull_mastery", "name", DATABASES)["id"]
 	for item_to_move in list_to_move:
@@ -111,7 +111,7 @@ def todoist_to_mm_routine():
 @router.post("/todoist_to_wishlist_routine")
 def todoist_to_wishlist_routine():
 	logger.info("start - hourly todoist to wishlist routine")
-	list_to_move = get_items_by_todoist_label(TO_WISHLIST_LABEL_ID)
+	list_to_move = get_items_by_todoist_label(TO_WISHLIST_LABEL_NAME)
 	logger.info(f"number of items to move from Todoist to Notion - Wishlist: {len(list_to_move)!s}")
 	for item_to_move in list_to_move:
 		add_task_to_notion_database(WISHLIST_ID, item_to_move, priority=-1)
