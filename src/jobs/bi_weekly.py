@@ -129,16 +129,15 @@ def update_book_rework(weighted):
 
 	if len(items) > 0:
 		due_items = [item["orig_item"] for item in items if item["orig_item"].due is not None]
-		tomorrow = {"date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
 		if len(due_items) > 0 and not weighted:
-			update_task_due(due_items[0], tomorrow)
+			update_task_due(due_items[0], "tomorrow")
 		else:
 			if weighted:
 				weights = [i for i in range(len(items), 0, -1)]
 				selected_entry = random.choices(items, weights=weights, k=1)[0]
 			else:
 				selected_entry = random.choice(items)
-			update_task_due(selected_entry["orig_item"], tomorrow)
+			update_task_due(selected_entry["orig_item"], "tomorrow")
 			# items.remove(selected_entry)
 			check_if_last_item(selected_entry["book"], items)
 	else:

@@ -288,8 +288,8 @@ def get_items_by_todoist_project(project_id):
 	return get_from_iterable(TODOIST_API.get_tasks(project_id=project_id))
 
 
-def update_task_due(item, due):
-	TODOIST_API.update_task(task_id=item.id, due_date=due)
+def update_task_due(item, due:str):
+	TODOIST_API.update_task(task_id=item.id, due_string=due)
 
 
 def check_if_last_item(book_title, items):

@@ -383,7 +383,7 @@ def get_random_from_notion_articles():
 		update_notion_page(selected_row["id"])
 
 
-def get_random_from_notion_link_list(database_id, df_projects=None, due={"string": "Tomorrow"}):
+def get_random_from_notion_link_list(database_id, df_projects=None, due="Tomorrow"):
 	selected_row = get_random_row_from_link_list(database_id)
 	if selected_row["properties~URL~url"]:
 		link = selected_row["properties~URL~url"]
@@ -393,12 +393,9 @@ def get_random_from_notion_link_list(database_id, df_projects=None, due={"string
 	content = "[" + selected_row["properties~Name~title~content"] + "](" + link + ")"
 	logger.info("update_todoist_and_notion - daily")
 	if df_projects is None:
-		item = TODOIST_API.add_task(content, labels=["Digital"])
-		move_item_to_section(item, DAILY_SECTION_ID)
-		update_task_due(item, due)
+		TODOIST_API.add_task(content, labels=["Digital"], section_id=DAILY_SECTION_ID, due_string=due)
 	else:
-		item = TODOIST_API.add_task(content, due=due, labels=["Digital"])
-		update_task_due(item.id, due)
+		item = TODOIST_API.add_task(content, due_string=due, labels=["Digital"])
 		generate_reminders(item, due)
 	update_notion_page(selected_row["id"])
 
