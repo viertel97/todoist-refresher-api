@@ -158,6 +158,7 @@ def stretch_tpt():
 def stretch_lists():
 	logger.info("start daily - stretch lists")
 	stretch_databases("ccf13accb1124856b6092fd37614144b")
+	stretch_databases("28fbb871dc8d8115ac91e92570ba7790")
 	logger.info("end daily - stretch lists")
 
 
