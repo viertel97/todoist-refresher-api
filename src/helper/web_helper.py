@@ -47,7 +47,8 @@ def get_habits_from_web():
 def get_distance_entries_from_web():
 	logger.info("get habits data from web")
 	response = requests.get(DISTANCES_URL, headers={"User-Agent": "Mozilla/5.0", "X-Master-Key": MASTER_KEY})
-	return response.json()["record"]
+	records = response.json()["record"]
+	return records["default_distances"], records["home"]
 
 
 def get_categories_data_from_web():

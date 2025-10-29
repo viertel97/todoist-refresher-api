@@ -135,6 +135,7 @@ def get_travel_start_time(
 		"travel_info": travel_info,
 		"mode": mode,
 		"traffic_model": traffic_model,
+		"original_destination": destination,
 	}
 
 
@@ -232,7 +233,7 @@ def format_travel_event_details(travel_info) -> dict:
 	Travel Information:
 	• Mode: {mode}{traffic_info}
 	• From: {travel_info["travel_info"]["origin"]}
-	• To: {travel_info["travel_info"]["destination"]}
+	• To: {travel_info["travel_info"]["destination"]} / {travel_info["original_destination"]}
 	• Distance: {travel_info["travel_info"]["distance"]["text"]}
 	• Travel Time: {travel_info["travel_duration"]} minutes
 	• Buffer Time: {travel_info["buffer_minutes"]} minutes
@@ -340,11 +341,6 @@ def process_calendar_events_with_travel(with_locations, default_locations: dict)
 	for calendar_event in with_locations:
 		if calendar_event.get("location"):
 			description = calendar_event.get("description", "")
-
-			if "travel information:" in description.lower():
-				# Skip events that are already travel events
-				continue
-
 			location = calendar_event.get("location")
 
 			# check in default locations if the event location matches any predefined locations
@@ -444,22 +440,47 @@ def _create_all_travel_events(calendar_event: dict) -> list:
 
 	return travel_events
 
+def already_has_travel_event(traget_event: dict, events: list) -> bool:
+	for event in events:
+		if "description" in event and "Travel Information:" in event["description"]:
+			if traget_event["location"] in event["description"]:
+				return True
+	return False
+
+def filter_events_with_location(events: list, home_address: str) -> list:
+	with_location = [
+		event
+		for event in events
+		if "location" in event
+		and event["location"]
+		and "#skip-distance" not in event.get("description", "").lower()
+		and "online" not in event.get("location", "").lower()
+	]
+
+	fitered_events = []
+
+	for event in with_location:
+		description = event.get("description", "")
+		if "travel information:" in description.lower():
+			continue
+		if home_address.lower() in event["location"].lower(): # not really needed
+			continue
+		if already_has_travel_event(event, with_location):
+			continue
+
+		fitered_events.append(event)
+
+
+	return fitered_events
 
 def create_travel_events_for_upcoming_calendar_events(days=1) -> list:
 	calendar_service = build_calendar_service()
 	calendar_dict = get_dict(calendar_service)
 
-	default_locations = get_distance_entries_from_web()
+	default_locations, home_address = get_distance_entries_from_web()
 
 	event_list = []
 	event_list.extend(get_events_from_calendar_for_days("Janik's Kalender", calendar_dict, calendar_service, days))
-	with_locations = [
-		x
-		for x in event_list
-		if "location" in x
-		and x["location"]
-		and "#skip-distance" not in x.get("description", "").lower()
-		and "online" not in x.get("location", "").lower()
-	]
+	with_locations = filter_events_with_location(event_list, home_address)
 
 	return process_calendar_events_with_travel(with_locations, default_locations)
