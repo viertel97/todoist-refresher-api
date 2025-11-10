@@ -10,7 +10,7 @@ from quarter_lib.logging import setup_logging
 
 from src.helper.config_helper import get_config, get_value
 from src.helper.web_helper import get_notion_ids_from_web
-from src.services.tandoor_service import get_all_from_endpoint, get_recipes_from_db, get_cook_log_from_db
+from src.services.tandoor_service import get_recipes_from_db, get_cook_log_from_db
 from src.services.todoist_history_service import get_completed_tasks
 from src.services.todoist_service import (
 	DAILY_SECTION_ID,
@@ -584,6 +584,10 @@ def fill_freezer_db():
 	df = get_database(freezer_database_id)
 	df = df[~df["properties~Tandoor-ID~number"].isna()]
 	df = df[df["properties~Name / Produkt~title"].apply(lambda x: len(x) == 0)]
+
+	if df.empty:
+		logger.info("No entries to update in freezer database")
+		return
 
 	recipes = get_recipes_from_db()
 	cook_logs = get_cook_log_from_db()

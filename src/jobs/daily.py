@@ -179,8 +179,8 @@ def stretch_articles():
 	logger.info("end daily - stretch articles")
 
 @logger.catch
-@router.post("/fill_frezer_db")
-def fill_frezer_db():
+@router.post("/fill_freezer_db")
+def fill_freezer_database():
 	logger.info("start daily - fill frezer db")
 	fill_freezer_db()
 	logger.info("end daily - fill frezer db")
