@@ -10,14 +10,13 @@ from quarter_lib.logging import setup_logging
 
 from src.helper.config_helper import get_config, get_value
 from src.helper.web_helper import get_notion_ids_from_web
+from src.services.tandoor_service import get_all_from_endpoint, get_recipes_from_db, get_cook_log_from_db
 from src.services.todoist_history_service import get_completed_tasks
 from src.services.todoist_service import (
 	DAILY_SECTION_ID,
 	THIS_WEEK_PROJECT_ID,
 	TODOIST_API,
-	generate_reminders,
-	move_item_to_section,
-	update_task_due,
+	generate_reminders
 )
 
 logger = setup_logging(__file__)
@@ -578,3 +577,43 @@ def stretch_databases(database_id, order_field="properties~Priority~number"):
 			logger.info(f"updated {index + 1} rows")
 		time.sleep(1)
 	logger.info("Done updating database with id " + database_id)
+
+
+def fill_freezer_db():
+	freezer_database_id = "2a7bb871dc8d8016b5b7cc6ed96d8c1d"
+	df = get_database(freezer_database_id)
+	df = df[~df["properties~Tandoor-ID~number"].isna()]
+	df = df[df["properties~Name / Produkt~title"].apply(lambda x: len(x) == 0)]
+
+	recipes = get_recipes_from_db()
+	cook_logs = get_cook_log_from_db()
+
+	for index, row in df.iterrows():
+		for _, cook_log in cook_logs.iterrows():
+			notion_recipe_id = row["properties~Tandoor-ID~number"]
+			tandoor_recipe_id = cook_log["recipe_id"]
+
+			if notion_recipe_id != tandoor_recipe_id:
+				continue
+
+			cooked_recipe = recipes[tandoor_recipe_id]
+			logger.info(f"Found cooked recipe '{cooked_recipe}' for Tandoor ID {notion_recipe_id}")
+
+			url = BASE_URL + "pages/" + row["id"]
+			data = {
+				"properties": {
+					"Name / Produkt": {
+						"title": [{"text": {"content": cooked_recipe["name"]}}]
+					},
+					"Rezept-Link": {
+						"url": cooked_recipe["link"]
+					}
+				}
+			}
+			r = requests.patch(url, data=json.dumps(data), headers=HEADERS)
+			if r.status_code != 200:
+				logger.error(r.status_code)
+				logger.error(r.text)
+			else:
+				logger.info(f"Updated 'Name / Produkt' for '{cooked_recipe}' ({row['id']})")
+			break

@@ -1,17 +1,14 @@
-import json
 import os
 from datetime import datetime, time, timedelta
 
-import requests
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from quarter_lib.google_calendar import (
 	build_calendar_service,
 	get_dict,
-	get_events_from_calendar,
 )
-from quarter_lib.todoist import move_item_to_project, update_due
+from quarter_lib.todoist import update_due
 from todoist_api_python.api import TodoistAPI
 
 from src.helper.date_helper import get_date_or_datetime
@@ -78,33 +75,6 @@ def get_events_for_days(days=2):
 
 	return event_list
 
-
-def get_call_events():
-	calendar_service = build_calendar_service()
-
-	calendar_dict = get_dict(calendar_service)
-
-	event_list = []
-	page_token = None
-
-	while True:
-		query_params = {
-			"calendarId": calendar_dict["Anrufverlauf"]["id"],
-			"pageToken": page_token,
-			"singleEvents": True,
-			"timeMin": datetime.today().replace(hour=0, minute=0, second=0).isoformat() + "Z",
-		}
-
-		events = calendar_service.events().list(**query_params).execute()
-
-		for event in events.get("items", []):
-			event_list.append(event)
-
-		page_token = events.get("nextPageToken")
-		if not page_token:
-			break
-
-	return event_list
 
 
 def was_at_day(event_list, days, check_for_next_day=False):
@@ -198,36 +168,6 @@ def get_description(activities):
 	return description_string
 
 
-def get_from_api(object_type):
-	logger.info("getting monica data: " + str(object_type))
-	headers = {"Authorization": "Bearer %s" % MONICA_TOKEN}
-	# logger.info("headers: " + str(headers))
-	api_url = "http://192.168.178.100:7000/api/"
-	objects = []
-	page = 1
-	while True:
-		url = api_url + object_type + "?page=" + str(page) + "&limit=100"
-		r = requests.get(url, headers=headers, timeout=100)
-		logger.info("getting monica data: " + str(object_type) + " - page " + str(page))
-		logger.info("getting monica data: " + str(object_type) + " - status code " + str(r.status_code))
-		for object_entry in r.json()["data"]:
-			objects.append(object_entry)
-		if len(r.json()["data"]) != 100:
-			break
-		page += 1
-	logger.info("found " + str(len(objects)) + " monica events")
-	return objects
-
-
-def get_pre_from_event(event):
-	before_indicator = "##### Before"
-	if event["description"] and before_indicator in event["description"]:
-		try:
-			desc = event["description"].split(before_indicator + "\n")[1]
-			return desc.split("#")[0].strip()
-		except Exception as e:
-			logger.error(e)
-
 
 def get_pre_from_activity(row, pre_list, archived_activities):
 	before_indicator = "##### Before"
@@ -273,36 +213,6 @@ def get_pre_from_activity(row, pre_list, archived_activities):
 				}
 			)
 
-
-def update_activities_without_date(activities):
-	new_date = datetime.now() + timedelta(days=7)
-	activities_to_remove = []
-	for activity in activities:
-		if activity["summary"] == "TBD":
-			update_acitivity(activity, new_date)
-			activities_to_remove.append(activity)
-	for activity in activities_to_remove:
-		activities.remove(activity)
-	return activities
-
-
-def update_acitivity(activity, new_date):
-	headers = {
-		"Authorization": "Bearer %s" % MONICA_TOKEN,
-		"Content-Type": "application/json",
-	}
-	api_url = "http://192.168.178.100:7000/api/"
-	url = api_url + "activities/" + str(activity["id"])
-	data = {
-		"happened_at": new_date.strftime("%Y-%m-%d"),
-		"summary": activity["summary"],
-		"contacts": activity["contact_ids"],
-		"description": activity["complete_description"],
-	}
-	logger.info(data)
-	if DEBUG:
-		r = requests.put(url, headers=headers, data=json.dumps(data))
-		logger.info(r.json())
 
 
 def get_activities(days):

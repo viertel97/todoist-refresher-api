@@ -34,7 +34,7 @@ from src.services.notion_service import (
 	update_habit_tracker_vacation_mode,
 	update_notion_habit_tracker,
 	update_notion_page_checkbox,
-	stretch_databases,
+	stretch_databases, fill_freezer_db,
 )
 from src.services.sqlite_service import get_koreader_book, get_koreader_page_stat
 from src.services.todoist_service import TODOIST_API, add_after_vacation_tasks, get_vacation_mode
@@ -177,6 +177,14 @@ def stretch_articles():
 	logger.info("start daily - stretch articles")
 	stretch_article_list()
 	logger.info("end daily - stretch articles")
+
+@logger.catch
+@router.post("/fill_frezer_db")
+def fill_frezer_db():
+	logger.info("start daily - fill frezer db")
+	fill_freezer_db()
+	logger.info("end daily - fill frezer db")
+
 
 
 def links():

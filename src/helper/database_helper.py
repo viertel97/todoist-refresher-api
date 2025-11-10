@@ -1,3 +1,4 @@
+import psycopg
 import pymysql
 from quarter_lib.akeyless import get_target
 from sqlalchemy import create_engine
@@ -10,6 +11,8 @@ DB_USER_NAME, DB_HOST_NAME, DB_PASSWORD, DB_PORT, DB_NAME = get_target("private"
 	DB_PORT_MONICA,
 	DB_NAME_MONICA,
 ) = get_target("monica")
+
+DB_USER_NAME_TANDOOR, DB_HOST_NAME_TANDOOR, DB_PASSWORD_TANDOOR, DB_PORT_TANDOOR, DB_NAME_TANDOOR = get_target("tandoor")
 
 
 def create_server_connection(target, alchemy=False):
@@ -25,6 +28,12 @@ def create_server_connection(target, alchemy=False):
 		db_password = DB_PASSWORD_MONICA
 		db_port = DB_PORT_MONICA
 		db_name = DB_NAME_MONICA
+	elif target == "tandoor":
+		db_user_name = DB_USER_NAME_TANDOOR
+		db_host_name = DB_HOST_NAME_TANDOOR
+		db_password = DB_PASSWORD_TANDOOR
+		db_port = DB_PORT_TANDOOR
+		db_name = DB_NAME_TANDOOR
 	else:
 		raise Exception("Unknown target")
 	if alchemy:
@@ -37,6 +46,26 @@ def create_server_connection(target, alchemy=False):
 		port=int(db_port),
 		database=db_name,
 		cursorclass=pymysql.cursors.DictCursor,
+	)
+
+def create_postgres_server_connection(target, alchemy=False):
+	if target == "tandoor":
+		db_user_name = DB_USER_NAME_TANDOOR
+		db_host_name = DB_HOST_NAME_TANDOOR
+		db_password = DB_PASSWORD_TANDOOR
+		db_port = DB_PORT_TANDOOR
+		db_name = DB_NAME_TANDOOR
+	else:
+		raise Exception("Unknown target")
+	if alchemy:
+		return create_engine(f"postgresql+psycopg2://{db_user_name}:{db_password}@{db_host_name}:{db_port}/{db_name}")
+
+	return psycopg.connect(
+		user=db_user_name,
+		host=db_host_name,
+		password=db_password,
+		port=int(db_port),
+		dbname=db_name,
 	)
 
 
