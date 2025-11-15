@@ -61,6 +61,7 @@ def todoist_to_tpt_routine():
 		set_done_label(item_to_move, "TPT")
 		complete_task(item_to_move)
 	logger.info("end - hourly todoist to tpt routine")
+	return list_to_move
 
 
 @logger.catch
