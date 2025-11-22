@@ -297,7 +297,7 @@ def create_departure_maps_url(origin, destination, depart_at=None, arrival_time=
 	return url
 
 
-def create_travel_calendar_event(event):
+def create_travel_calendar_event(event: dict, calendar_dict):
 	calendar_service = build_calendar_service()
 
 	calendar_event = {
@@ -322,17 +322,18 @@ def create_travel_calendar_event(event):
 		"colorId": "3",  # https://i.sstatic.net/YSMrI.png
 	}
 
-	event = calendar_service.events().insert(calendarId="primary", body=calendar_event).execute()
+	event = calendar_service.events().insert(calendarId=calendar_dict["Distance-Events"], body=calendar_event).execute()
 	logger.info("Event created: %s" % (event.get("htmlLink")))
 
 
-def process_calendar_events_with_travel(with_locations, default_locations: dict) -> list:
+def process_calendar_events_with_travel(with_locations, default_locations: dict, calendar_dict) -> list:
 	"""
 	Process calendar events and create travel events for each
 
 	Args:
 		with_locations (list): List of calendar events with location information
 		default_locations (dict): Predefined locations for travel type matching
+		calendar_dict (dict): Calendar dictionary for event creation
 
 	Returns:
 		list: List of created travel events
@@ -354,14 +355,14 @@ def process_calendar_events_with_travel(with_locations, default_locations: dict)
 				travel_event = _create_single_travel_event(calendar_event=calendar_event, travel_type=travel_type)
 
 				if travel_event:
-					create_travel_calendar_event(travel_event)
+					create_travel_calendar_event(travel_event, calendar_dict)
 					created_events.append(travel_event)
 			else:
 				# No specific travel type found, create all three
 				travel_events = _create_all_travel_events(calendar_event)
 				for travel_event in travel_events:
 					if travel_event:
-						create_travel_calendar_event(travel_event)
+						create_travel_calendar_event(travel_event, calendar_dict)
 						created_events.append(travel_event)
 
 	return created_events
@@ -481,6 +482,7 @@ def create_travel_events_for_upcoming_calendar_events(days=1) -> list:
 
 	event_list = []
 	event_list.extend(get_events_from_calendar_for_days("Janik's Kalender", calendar_dict, calendar_service, days))
+	event_list.extend(get_events_from_calendar_for_days("Distance-Events", calendar_dict, calendar_service, days))
 	with_locations = filter_events_with_location(event_list, home_address)
 
-	return process_calendar_events_with_travel(with_locations, default_locations)
+	return process_calendar_events_with_travel(with_locations, default_locations, calendar_dict)
