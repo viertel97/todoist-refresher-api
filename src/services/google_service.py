@@ -322,7 +322,7 @@ def create_travel_calendar_event(event: dict, calendar_dict):
 		"colorId": "3",  # https://i.sstatic.net/YSMrI.png
 	}
 
-	event = calendar_service.events().insert(calendarId=calendar_dict["Distance-Events"], body=calendar_event).execute()
+	event = calendar_service.events().insert(calendarId=calendar_dict["Distance-Events"]["id"], body=calendar_event).execute()
 	logger.info("Event created: %s" % (event.get("htmlLink")))
 
 
