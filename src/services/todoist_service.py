@@ -146,7 +146,7 @@ def move_items(project_dict, df_projects):
 	for project in project_dict.keys():
 		for task_id in project_dict[project]:
 			project_to_move = df_projects[df_projects.name == project].iloc[0]
-			result = move_item_to_project(task_id=task_id, project_id=project_to_move["id"])
+			result = TODOIST_API.move_task(task_id=task_id, project_id=project_to_move["id"])
 			logger.info(f"trying to move task {task_id} to project {project} - result: {result}")
 
 
