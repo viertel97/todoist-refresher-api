@@ -2,12 +2,12 @@ import uuid
 from datetime import datetime, timedelta, date, time
 
 import pandas as pd
+import requests
 from dateutil import parser
 from quarter_lib.akeyless import get_secrets
 from quarter_lib.logging import setup_logging
 from quarter_lib.todoist import (
 	add_reminder,
-	get_user_karma_vacation,
 	get_user_state,
 	move_item_to_project,
 	move_item_to_section,
@@ -229,9 +229,12 @@ def get_description(activities, calendar_description=None):
 	return description_string
 
 
-def get_vacation_mode():
-	return bool(get_user_karma_vacation())
-
+def get_vacation_mode() -> bool:
+	user_response = requests.get(
+		"https://api.todoist.com/api/v1/tasks/completed/stats", headers=HEADERS)
+	goals = user_response.json().get("goals", {})
+	vacation_mode = bool(goals.get("vacation_mode", False))
+	return vacation_mode
 
 def get_items_by_todoist_label(label_name):
 	return get_from_iterable(TODOIST_API.get_tasks(label=label_name))
