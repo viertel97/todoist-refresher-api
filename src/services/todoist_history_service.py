@@ -47,25 +47,26 @@ def flatten_list_of_dicts(lst):
 def get_completed_tasks(since: datetime) -> pd.DataFrame:
 	offset = 0
 	all_items = []
+	try:
+		while True:
+			response = requests.post(
+				get_sync_url("completed/get_all"),
+				data={
+					"annotate_notes": True,
+					"annotate_items": True,
+					"since": since.strftime("%Y-%m-%dT%H:%M:%S"),
+					"limit": COMPLETE_TASKS_LIMIT,
+					"offset": offset,
+				},
+				headers=HEADERS,
+			).json()
 
-	while True:
-		response = requests.post(
-			get_sync_url("completed/get_all"),
-			data={
-				"annotate_notes": True,
-				"annotate_items": True,
-				"since": since.strftime("%Y-%m-%dT%H:%M:%S"),
-				"limit": COMPLETE_TASKS_LIMIT,
-				"offset": offset,
-			},
-			headers=HEADERS,
-		).json()
-
-		all_items.extend(flatten_list_of_dicts(response["items"]))
-		if len(response["items"]) < COMPLETE_TASKS_LIMIT:
-			break
-		offset += COMPLETE_TASKS_LIMIT
-
+			all_items.extend(flatten_list_of_dicts(response["items"]))
+			if len(response["items"]) < COMPLETE_TASKS_LIMIT:
+				break
+			offset += COMPLETE_TASKS_LIMIT
+	except Exception as e:
+		return pd.DataFrame()
 	all_items = [
 		{
 			k: v

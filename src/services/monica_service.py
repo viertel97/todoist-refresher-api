@@ -8,7 +8,6 @@ from quarter_lib.google_calendar import (
 	build_calendar_service,
 	get_dict,
 )
-from quarter_lib.todoist import update_due
 from todoist_api_python.api import TodoistAPI
 
 from src.helper.date_helper import get_date_or_datetime
@@ -151,10 +150,9 @@ def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
 				description=description if description != "" else None,
 				project_id="6Crcr3mXxVh6f97J",
 				labels=["Digital"],
+				due_string=due["string"],
 			)
 			logger.info("added Todoist task: " + str(item))
-			result_update_due = update_due(item.id, due=due)
-			logger.info("updated Todoist task: " + str(result_update_due))
 
 			logger.info("added Todoist task: " + str(item))
 
