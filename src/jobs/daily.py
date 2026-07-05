@@ -63,7 +63,7 @@ async def monica(check_for_next_day=False, days=0):
 
 	activities = get_activities(days)
 
-	events = get_events_for_days()
+	events = get_events_for_days(abs(days))
 	events_today, _ = was_at_day(events, days, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
 	events_today = [event for event in events_today if filter_event(event["summary"])]
