@@ -64,13 +64,13 @@ async def monica(check_for_next_day=False, days=0):
 	activities = get_activities(days)
 
 	events = get_events_for_days(abs(days))
-	events_today, _ = was_at_day(events, days, check_for_next_day)
+	events_today, selected_day = was_at_day(events, days, check_for_next_day)
 	logger.info("found " + str(len(events_today)) + " Google Calendar events")
 	events_today = [event for event in events_today if filter_event(event["summary"])]
 	if len(events_today) > 0:
 		# TODO: add matched schema so afterwards we can also add
 		#  default participants to Todoist and DB-Entry and then remove the Stored Procedure - use "schema_matches"
-		add_tasks(TODOIST_API, events_today, activities)
+		add_tasks(TODOIST_API, events_today, activities, selected_day)
 		created_activities = add_monica_activities(events_today)
 	#   if not check_for_next_day:
 	# for row in created_activities:

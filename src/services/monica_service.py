@@ -108,7 +108,8 @@ def was_at_day(event_list, days, check_for_next_day=False):
 DAILY_LINKS_THRESHOLD = time(hour=16)
 
 
-def is_multiday_event(appointment):
+def is_multiday_event(appointment, ref_day=None):
+	ref_day = ref_day or datetime.today().date()
 	start = get_date_or_datetime(appointment, "start").replace(tzinfo=None)
 	end = get_date_or_datetime(appointment, "end").replace(tzinfo=None)
 
@@ -117,17 +118,18 @@ def is_multiday_event(appointment):
 
 	if "dateTime" in appointment["start"].keys():
 		if start.date() != end.date():
-			return (datetime.today().date() - start.date()).days + 1
+			return (ref_day - start.date()).days + 1
 
 	if start.date() != (
 		end.date() - timedelta(days=1)
 	):  # adding 1 day because full day events would otherwise be counted as multiday events
 		# which day of multiday event (eg. 2nd day)
-		return (datetime.today().date() - start.date()).days + 1
+		return (ref_day - start.date()).days + 1
 	return False
 
 
-def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
+def add_tasks(api: TodoistAPI, events: list[dict], activities: list, ref_day=None):
+	ref_day = ref_day or datetime.today().date()
 	if len(events) > 0:
 		for event in events:
 			logger.info("adding Todoist task: " + str(event))
@@ -136,11 +138,10 @@ def add_tasks(api: TodoistAPI, events: list[dict], activities: list):
 				due = {"string": "Today"}
 			else:
 				due = {"string": "Tomorrow"}
-			is_multiday = is_multiday_event(event)
+			is_multiday = is_multiday_event(event, ref_day)
 			if is_multiday:
-				today = datetime.today()
-				event["happened_at"] = today.strftime("%Y-%m-%d")
-				event["summary"] = event["summary"] + f" (Tag {is_multiday!s} - {event['happened_at']} - {today.strftime('%A')})"
+				event["happened_at"] = ref_day.strftime("%Y-%m-%d")
+				event["summary"] = event["summary"] + f" (Tag {is_multiday!s} - {event['happened_at']} - {ref_day.strftime('%A')})"
 				due = {"string": "Tomorrow"}
 			content = "'" + event["summary"] + "'" + " - nacharbeiten & Tracker pflegen"
 			logger.info("content: " + str(content))
